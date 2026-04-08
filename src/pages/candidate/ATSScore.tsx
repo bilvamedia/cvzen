@@ -90,8 +90,8 @@ const ATSScore = () => {
     }
     setResumeId(resume.id);
 
-    // Load scores and history in parallel
-    const [scoresRes, historyRes] = await Promise.all([
+    // Load scores, history, and improved sections in parallel
+    const [scoresRes, historyRes, sectionsRes] = await Promise.all([
       supabase
         .from("ats_section_scores")
         .select("*")
@@ -103,11 +103,40 @@ const ATSScore = () => {
         .eq("resume_id", resume.id)
         .order("created_at", { ascending: false })
         .limit(10),
+      supabase
+        .from("resume_sections")
+        .select("id, improved_content")
+        .eq("resume_id", resume.id),
     ]);
 
     if (scoresRes.data) setSectionScores(scoresRes.data as any);
     if (historyRes.data) setHistory(historyRes.data as any);
+    if (sectionsRes.data) {
+      const improved = new Set<string>();
+      sectionsRes.data.forEach((s: any) => {
+        if (s.improved_content) improved.add(s.id);
+      });
+      setImprovedSections(improved);
+    }
     setLoading(false);
+  };
+
+  const improveSection = async (sectionId: string) => {
+    setImprovingSection(sectionId);
+    try {
+      const { data, error } = await supabase.functions.invoke("improve-section", {
+        body: { sectionId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setImprovedSections(prev => new Set(prev).add(sectionId));
+      toast({ title: "Section improved!", description: "The improved version is now shown on your digital profile." });
+    } catch (err: any) {
+      toast({ title: "Improvement failed", description: err.message, variant: "destructive" });
+    } finally {
+      setImprovingSection(null);
+    }
   };
 
   const runScoring = async () => {
