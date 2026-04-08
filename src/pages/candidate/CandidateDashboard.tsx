@@ -1,5 +1,5 @@
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, User, Search, Share2, Target } from "lucide-react";
+import { LayoutDashboard, FileText, User, Search, Share2, Target, ThumbsUp, Bookmark, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -15,6 +15,8 @@ const navItems = [
 
 const CandidateDashboard = () => {
   const [stats, setStats] = useState({ completeness: 0, sections: 0, atsScore: 0 });
+  const [recruiterStats, setRecruiterStats] = useState({ likes: 0, shortlists: 0 });
+  const [profileSlug, setProfileSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,6 +30,7 @@ const CandidateDashboard = () => {
       const profileFields = ["full_name", "email", "phone", "headline", "bio", "address", "linkedin_url", "website_url", "avatar_url"];
       const filledFields = profile ? profileFields.filter((f) => profile[f as keyof typeof profile]) : [];
       const completeness = Math.round((filledFields.length / profileFields.length) * 100);
+      setProfileSlug(profile?.profile_slug || null);
 
       const { count: sectionCount } = await supabase
         .from("resume_sections")
@@ -42,15 +45,29 @@ const CandidateDashboard = () => {
         .limit(1)
         .maybeSingle();
 
+      // Fetch recruiter activity on this profile
+      const { count: likeCount } = await supabase
+        .from("profile_likes")
+        .select("id", { count: "exact", head: true })
+        .eq("profile_id", userId);
+
+      const { count: shortlistCount } = await supabase
+        .from("shortlisted_candidates")
+        .select("id", { count: "exact", head: true })
+        .eq("candidate_profile_id", userId);
+
       setStats({
         completeness,
         sections: sectionCount || 0,
         atsScore: latestScore?.overall_score || 0,
       });
+      setRecruiterStats({
+        likes: likeCount || 0,
+        shortlists: shortlistCount || 0,
+      });
       setLoading(false);
     };
 
-    // Wait for auth session to be ready before querying
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         fetchStats(session.user.id);
@@ -70,9 +87,14 @@ const CandidateDashboard = () => {
   }, []);
 
   const statCards = [
-    { label: "Profile Completeness", value: `${stats.completeness}%`, color: "text-primary" },
-    { label: "CV Sections", value: String(stats.sections), color: "text-accent" },
-    { label: "ATS Score", value: stats.atsScore ? `${stats.atsScore}/100` : "N/A", color: "text-foreground" },
+    { label: "Profile Completeness", value: `${stats.completeness}%`, color: "text-primary", icon: User },
+    { label: "CV Sections", value: String(stats.sections), color: "text-accent", icon: FileText },
+    { label: "ATS Score", value: stats.atsScore ? `${stats.atsScore}/100` : "N/A", color: "text-foreground", icon: Target },
+  ];
+
+  const recruiterActivityCards = [
+    { label: "Profile Upvotes", value: String(recruiterStats.likes), color: "text-primary", icon: ThumbsUp, description: "Visitors who upvoted your profile" },
+    { label: "Shortlisted By", value: String(recruiterStats.shortlists), color: "text-accent", icon: Bookmark, description: "Recruiters who shortlisted you" },
   ];
 
   return (
@@ -81,10 +103,14 @@ const CandidateDashboard = () => {
         <h1 className="text-2xl font-bold text-foreground mb-1">Welcome back 👋</h1>
         <p className="text-muted-foreground mb-8">Here's your overview.</p>
 
+        {/* Profile Stats */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {statCards.map((s, i) => (
             <div key={i} className="bg-card rounded-xl p-5 shadow-card border border-border">
-              <p className="text-sm text-muted-foreground mb-1">{s.label}</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm text-muted-foreground">{s.label}</p>
+                <s.icon className="h-4 w-4 text-muted-foreground/50" />
+              </div>
               <p className={`text-3xl font-bold ${s.color}`}>
                 {loading ? "…" : s.value}
               </p>
@@ -92,6 +118,27 @@ const CandidateDashboard = () => {
           ))}
         </div>
 
+        {/* Recruiter Activity */}
+        <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+          <Eye className="h-5 w-5 text-primary" />
+          Recruiter Activity
+        </h2>
+        <div className="grid sm:grid-cols-2 gap-4 mb-8">
+          {recruiterActivityCards.map((s, i) => (
+            <div key={i} className="bg-card rounded-xl p-5 shadow-card border border-border">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm text-muted-foreground">{s.label}</p>
+                <s.icon className="h-4 w-4 text-muted-foreground/50" />
+              </div>
+              <p className={`text-3xl font-bold ${s.color}`}>
+                {loading ? "…" : s.value}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">{s.description}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Quick Actions */}
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="bg-card rounded-xl p-6 shadow-card border border-border">
             <div className="flex items-center gap-3 mb-4">
