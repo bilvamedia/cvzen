@@ -255,21 +255,36 @@ const PublicProfile = () => {
             <Link to="/" className="inline-flex items-center text-white/70 hover:text-white text-sm transition-colors">
               <ArrowLeft className="w-4 h-4 mr-1" /> Back to CVZen
             </Link>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 border border-white/20">
-                  <Download className="h-4 w-4 mr-1.5" /> Download CV
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => downloadCV("pdf")}>
-                  <FileText className="h-4 w-4 mr-2" /> Download as PDF
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => downloadCV("docx")}>
-                  <FileText className="h-4 w-4 mr-2" /> Download as Word
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center gap-2">
+              {/* Like / Upvote button */}
+              <button
+                onClick={handleLike}
+                disabled={hasLiked || liking}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                  hasLiked
+                    ? "bg-white/20 text-white cursor-default"
+                    : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 hover:border-white/30"
+                }`}
+              >
+                <ThumbsUp className={`h-4 w-4 transition-transform duration-300 ${hasLiked ? "fill-current scale-110" : ""}`} />
+                <span>{likeCount}</span>
+              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 border border-white/20">
+                    <Download className="h-4 w-4 mr-1.5" /> Download CV
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => downloadCV("pdf")}>
+                    <FileText className="h-4 w-4 mr-2" /> Download as PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadCV("docx")}>
+                    <FileText className="h-4 w-4 mr-2" /> Download as Word
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
           <div className="flex flex-col md:flex-row items-start gap-6">
             {profile.avatar_url ? (
