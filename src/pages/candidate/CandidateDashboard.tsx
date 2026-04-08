@@ -51,10 +51,9 @@ const CandidateDashboard = () => {
         .select("id", { count: "exact", head: true })
         .eq("profile_id", userId);
 
-      const { count: shortlistCount } = await supabase
-        .from("shortlisted_candidates")
-        .select("id", { count: "exact", head: true })
-        .eq("candidate_profile_id", userId);
+      const { data: shortlistData } = await supabase.rpc("get_candidate_shortlist_count", {
+        _candidate_id: userId,
+      });
 
       setStats({
         completeness,
@@ -63,7 +62,7 @@ const CandidateDashboard = () => {
       });
       setRecruiterStats({
         likes: likeCount || 0,
-        shortlists: shortlistCount || 0,
+        shortlists: shortlistData || 0,
       });
       setLoading(false);
     };
