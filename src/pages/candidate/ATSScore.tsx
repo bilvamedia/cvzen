@@ -303,13 +303,13 @@ const ATSScore = () => {
                 return (
                   <div key={section.id} className="bg-card rounded-xl shadow-card border border-border overflow-hidden">
                     <button
-                      className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-muted/20 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-3 sm:px-5 sm:py-4 text-left hover:bg-muted/20 transition-colors"
                       onClick={() => setExpandedSection(isExpanded ? null : section.id)}
                     >
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-medium text-foreground truncate">{section.section_title}</h4>
-                          <Badge variant="outline" className="text-[10px] shrink-0">{section.section_type}</Badge>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <h4 className="font-medium text-foreground truncate text-sm sm:text-base">{section.section_title}</h4>
+                          <Badge variant="outline" className="text-[9px] sm:text-[10px] shrink-0 max-w-[120px] sm:max-w-none truncate">{section.section_type.replace(/_/g, " ")}</Badge>
                         </div>
                         <div className="flex items-center gap-3 mt-1.5">
                           <Progress value={section.score} className={`h-2 flex-1 [&>div]:${getScoreBg(section.score)}`} />
