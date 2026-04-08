@@ -258,6 +258,41 @@ const CandidateProfile = () => {
     }
   };
 
+  // === Improve Bio with AI ===
+  const handleImproveBio = async () => {
+    setImprovingBio(true);
+    try {
+      // Gather resume context
+      const resumeContext = sections.map(s => {
+        const content = s.improved_content || s.content;
+        const items = content?.items || [];
+        return `${s.section_title}:\n${items.map((it: any) => [it.title, it.subtitle, it.description, ...(it.details || [])].filter(Boolean).join(" — ")).join("\n")}`;
+      }).join("\n\n");
+
+      const currentBio = profileForm.bio || "";
+      const name = profileForm.full_name || profile?.full_name || "";
+      const headline = profileForm.headline || profile?.headline || "";
+
+      const { data, error } = await supabase.functions.invoke("improve-section", {
+        body: {
+          customPrompt: true,
+          prompt: `You are a professional resume writer. Based on the following resume data, ${currentBio ? "improve this bio" : "write a compelling professional bio"} for ${name || "this candidate"}${headline ? ` who is a ${headline}` : ""}. Keep it concise (2-4 sentences), professional, and highlight key strengths.\n\n${currentBio ? `Current bio: ${currentBio}\n\n` : ""}Resume data:\n${resumeContext}\n\nReturn ONLY the improved bio text, nothing else.`,
+        },
+      });
+      if (error) throw error;
+      if (data?.improved_text) {
+        setProfileForm((p: any) => ({ ...p, bio: data.improved_text }));
+        toast({ title: "Bio generated!", description: "Review and save when ready." });
+      } else if (data?.error) {
+        throw new Error(data.error);
+      }
+    } catch (err: any) {
+      toast({ title: "Bio improvement failed", description: err.message, variant: "destructive" });
+    } finally {
+      setImprovingBio(false);
+    }
+  };
+
   const handleShare = () => {
     navigator.clipboard.writeText(`${window.location.origin}/profile/${profile?.id}`);
     toast({ title: "Link copied!", description: "Share this link with recruiters." });
