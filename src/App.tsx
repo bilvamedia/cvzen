@@ -3,8 +3,18 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import CandidateDashboard from "./pages/candidate/CandidateDashboard";
+import ResumeUpload from "./pages/candidate/ResumeUpload";
+import CandidateProfile from "./pages/candidate/CandidateProfile";
+import JobSearch from "./pages/candidate/JobSearch";
+import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
+import PostJob from "./pages/recruiter/PostJob";
+import RecruiterJobs from "./pages/recruiter/RecruiterJobs";
+import CandidateSearch from "./pages/recruiter/CandidateSearch";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -15,8 +25,17 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/candidate" element={<CandidateDashboard />} />
+          <Route path="/candidate/resume" element={<ResumeUpload />} />
+          <Route path="/candidate/profile" element={<CandidateProfile />} />
+          <Route path="/candidate/search" element={<JobSearch />} />
+          <Route path="/recruiter" element={<RecruiterDashboard />} />
+          <Route path="/recruiter/post-job" element={<PostJob />} />
+          <Route path="/recruiter/jobs" element={<RecruiterJobs />} />
+          <Route path="/recruiter/search" element={<CandidateSearch />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
