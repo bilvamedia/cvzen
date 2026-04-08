@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText, Users, Sparkles, ArrowRight, Shield, Zap, Brain } from "lucide-react";
+import logoFull from "@/assets/logo-full.jpg";
 import logoMain from "@/assets/logo-main.svg";
 
 const Landing = () => {
