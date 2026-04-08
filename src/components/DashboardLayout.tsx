@@ -34,7 +34,7 @@ const DashboardLayout = ({ children, navItems, role }: DashboardLayoutProps) => 
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between h-16 px-6 border-b border-sidebar-border">
             <Link to="/" className="flex items-center gap-2">
-              <img src={logoFull} alt="cvZen — Intelligent Hiring OS" className="h-9 rounded" />
+              <img src={logoMain} alt="cvZen — Intelligent Hiring OS" className="h-8 w-auto max-w-[180px]" />
             </Link>
             <button className="lg:hidden text-sidebar-foreground" onClick={() => setSidebarOpen(false)}>
               <X className="h-5 w-5" />
