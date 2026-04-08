@@ -73,7 +73,7 @@ const ATSScore = () => {
   const [scoring, setScoring] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [resumeId, setResumeId] = useState<string | null>(null);
-  const [improvingSection, setImprovingSection] = useState<string | null>(null);
+  const [improvingKey, setImprovingKey] = useState<string | null>(null);
   const [improvedSections, setImprovedSections] = useState<Set<string>>(new Set());
 
   useEffect(() => {
