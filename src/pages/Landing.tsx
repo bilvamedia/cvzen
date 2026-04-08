@@ -43,10 +43,10 @@ const Counter = ({ end, suffix = "", duration = 2000 }: { end: number; suffix?: 
 };
 
 const FEATURES = [
-  { icon: Brain, title: "AI-Powered Parsing", desc: "Intelligent extraction of skills, experience, and qualifications from any resume format with 98% accuracy.", tag: "NLP Engine" },
+  { icon: Brain, title: "AI-Powered Parsing", desc: "Intelligent extraction of skills, experience, and qualifications from any CV format with 98% accuracy.", tag: "NLP Engine" },
   { icon: Search, title: "Semantic Search", desc: "Go beyond keyword matching. Find candidates by meaning, context, and intent — powered by vector embeddings.", tag: "Vector Search" },
-  { icon: BarChart3, title: "ATS Scoring", desc: "Section-by-section resume scoring with actionable improvement suggestions aligned to industry standards.", tag: "Analytics" },
-  { icon: Globe, title: "Digital Profiles", desc: "Transform static resumes into rich, shareable digital profiles that recruiters can discover and evaluate.", tag: "Profiles" },
+  { icon: BarChart3, title: "ATS Scoring", desc: "Section-by-section CV scoring with actionable improvement suggestions aligned to industry standards.", tag: "Analytics" },
+  { icon: Globe, title: "Digital Profiles", desc: "Transform static CVs into rich, shareable digital profiles that recruiters can discover and evaluate.", tag: "Profiles" },
   { icon: Target, title: "Smart Matching", desc: "Connect the right talent to the right roles using multi-dimensional compatibility scoring.", tag: "Matching" },
   { icon: Shield, title: "Enterprise Security", desc: "SOC 2 compliant infrastructure with role-based access, audit trails, and end-to-end encryption.", tag: "Security" },
 ];
@@ -54,12 +54,12 @@ const FEATURES = [
 const STATS = [
   { value: 98, suffix: "%", label: "Parsing Accuracy" },
   { value: 3, suffix: "x", label: "Faster Screening" },
-  { value: 10000, suffix: "+", label: "Resumes Processed" },
+  { value: 10000, suffix: "+", label: "CVs Processed" },
   { value: 85, suffix: "%", label: "Recruiter Time Saved" },
 ];
 
 const WORKFLOW = [
-  { step: "01", title: "Upload", desc: "Candidates upload resumes in any format. Our AI parses and structures every section.", icon: FileText },
+  { step: "01", title: "Upload", desc: "Candidates upload CVs in any format. Our AI parses and structures every section.", icon: FileText },
   { step: "02", title: "Analyze", desc: "AI scores each section, identifies keywords, and generates improvement suggestions.", icon: Brain },
   { step: "03", title: "Profile", desc: "A rich digital profile is auto-generated — shareable, searchable, and always up to date.", icon: Users },
   { step: "04", title: "Connect", desc: "Recruiters search semantically, finding talent by meaning — not just matching keywords.", icon: Zap },
@@ -137,7 +137,7 @@ const Landing = () => {
               className={`text-base sm:text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed opacity-0 ${hero.inView ? 'animate-fade-in stagger-2' : ''}`}
               style={{ color: 'hsl(240 10% 40%)' }}
             >
-              Upload resumes, parse with AI, create digital profiles, and search semantically.
+              Upload CVs, parse with AI, create digital profiles, and search semantically.
               Connect the right candidates with the right roles — intelligently.
             </p>
 
@@ -274,10 +274,10 @@ const Landing = () => {
               </div>
               <h3 className="text-xl font-bold text-foreground mb-2">For Candidates</h3>
               <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-                Upload your resume, get AI-powered insights, build a digital profile, and improve your ATS score section by section.
+                Upload your CV, get AI-powered insights, build a digital profile, and improve your ATS score section by section.
               </p>
               <ul className="space-y-2 mb-6" aria-label="Candidate benefits">
-                {["AI resume parsing", "Section-wise ATS scoring", "Digital profile builder", "Resume improvement suggestions"].map((b) => (
+                {["AI CV parsing", "Section-wise ATS scoring", "Digital profile builder", "CV improvement suggestions"].map((b) => (
                   <li key={b} className="flex items-center gap-2 text-sm text-foreground/80">
                     <Check className="h-4 w-4 text-primary flex-shrink-0" aria-hidden="true" />
                     {b}
