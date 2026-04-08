@@ -16,6 +16,9 @@ import PostJob from "./pages/recruiter/PostJob";
 import RecruiterJobs from "./pages/recruiter/RecruiterJobs";
 import CandidateSearch from "./pages/recruiter/CandidateSearch";
 import NotFound from "./pages/NotFound";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Disclaimer from "./pages/Disclaimer";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +41,9 @@ const App = () => (
           <Route path="/recruiter/post-job" element={<PostJob />} />
           <Route path="/recruiter/jobs" element={<RecruiterJobs />} />
           <Route path="/recruiter/search" element={<CandidateSearch />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
