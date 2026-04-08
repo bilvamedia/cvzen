@@ -60,12 +60,12 @@ serve(async (req) => {
       });
     }
 
-    // Build section summaries for AI
+    // Build section summaries for AI — use improved content when available
     const sectionSummaries = sections.map(s => ({
       id: s.id,
       section_type: s.section_type,
       section_title: s.section_title,
-      content: s.content,
+      content: s.improved_content || s.content,
     }));
 
     const systemPrompt = `You are an expert ATS (Applicant Tracking System) scoring engine. You will receive resume sections and must score EACH section individually on a 0-100 scale based on real ATS criteria.
