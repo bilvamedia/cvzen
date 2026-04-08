@@ -28,16 +28,63 @@ interface PublicProfileData {
   profile_slug: string | null;
 }
 
+const getVisitorHash = async (): Promise<string> => {
+  const stored = localStorage.getItem("cvzen_visitor_id");
+  if (stored) return stored;
+  const id = crypto.randomUUID();
+  localStorage.setItem("cvzen_visitor_id", id);
+  return id;
+};
+
 const PublicProfile = () => {
   const { slug } = useParams<{ slug: string }>();
   const [profile, setProfile] = useState<PublicProfileData | null>(null);
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [hasLiked, setHasLiked] = useState(false);
+  const [liking, setLiking] = useState(false);
 
   useEffect(() => {
     if (slug) loadPublicProfile(slug);
   }, [slug]);
+
+  const loadLikes = useCallback(async (profileId: string) => {
+    const [countRes, visitorHash] = await Promise.all([
+      supabase.from("profile_likes").select("id", { count: "exact", head: true }).eq("profile_id", profileId),
+      getVisitorHash(),
+    ]);
+    setLikeCount(countRes.count || 0);
+
+    const { data: existing } = await supabase
+      .from("profile_likes")
+      .select("id")
+      .eq("profile_id", profileId)
+      .eq("visitor_hash", visitorHash)
+      .maybeSingle();
+    setHasLiked(!!existing);
+  }, []);
+
+  const handleLike = async () => {
+    if (!profile || hasLiked || liking) return;
+    setLiking(true);
+    try {
+      const visitorHash = await getVisitorHash();
+      const { error } = await supabase.from("profile_likes").insert({
+        profile_id: profile.id,
+        visitor_hash: visitorHash,
+      });
+      if (!error) {
+        setHasLiked(true);
+        setLikeCount(prev => prev + 1);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setLiking(false);
+    }
+  };
 
   const loadPublicProfile = async (profileSlug: string) => {
     setLoading(true);
@@ -54,6 +101,7 @@ const PublicProfile = () => {
       }
 
       setProfile(data as PublicProfileData);
+      loadLikes(data.id);
 
       const { data: secs } = await supabase.rpc("get_public_resume_sections", {
         _profile_id: data.id,
