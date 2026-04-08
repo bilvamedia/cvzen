@@ -19,6 +19,7 @@ const CandidateProfile = () => {
   const [profile, setProfile] = useState<any>(null);
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [improvingKey, setImprovingKey] = useState<string | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -28,11 +29,9 @@ const CandidateProfile = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Get profile
     const profileRes = await supabase.from("profiles").select("*").eq("id", user.id).single();
     if (profileRes.data) setProfile(profileRes.data);
 
-    // Get latest parsed resume, then its sections
     const { data: latestResume } = await supabase
       .from("resumes")
       .select("id")
@@ -51,6 +50,30 @@ const CandidateProfile = () => {
       if (secs) setSections(secs);
     }
     setLoading(false);
+  };
+
+  const handleImproveItem = async (sectionId: string, itemIndex: number) => {
+    const key = `${sectionId}-${itemIndex}`;
+    setImprovingKey(key);
+    try {
+      const { data, error } = await supabase.functions.invoke("improve-section", {
+        body: { sectionId, itemIndex },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Update the local section with improved content
+      setSections(prev => prev.map(s => 
+        s.id === sectionId 
+          ? { ...s, improved_content: data.improved_content }
+          : s
+      ));
+      toast({ title: "Item improved!", description: "The enhanced version is now showing." });
+    } catch (err: any) {
+      toast({ title: "Improvement failed", description: err.message, variant: "destructive" });
+    } finally {
+      setImprovingKey(null);
+    }
   };
 
   const handleShare = () => {
@@ -103,9 +126,13 @@ const CandidateProfile = () => {
           </div>
         </div>
 
-        {/* Dynamic sections */}
+        {/* Dynamic sections with per-item improve */}
         {sections.length > 0 ? (
-          <ResumeSections sections={sections} />
+          <ResumeSections
+            sections={sections}
+            onImproveItem={handleImproveItem}
+            improvingKey={improvingKey}
+          />
         ) : (
           <div className="bg-card rounded-xl p-8 shadow-card border border-border text-center">
             <p className="text-muted-foreground text-sm">
