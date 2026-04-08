@@ -145,21 +145,22 @@ const ATSScore = () => {
     setLoading(false);
   };
 
-  const improveSection = async (sectionId: string) => {
-    setImprovingSection(sectionId);
+  const improveItem = async (sectionId: string, itemIndex: number) => {
+    const key = `${sectionId}-${itemIndex}`;
+    setImprovingKey(key);
     try {
       const { data, error } = await supabase.functions.invoke("improve-section", {
-        body: { sectionId },
+        body: { sectionId, itemIndex },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
       setImprovedSections(prev => new Set(prev).add(sectionId));
-      toast({ title: "Section improved!", description: "The improved version is now shown on your digital profile." });
+      toast({ title: "Item improved!", description: "The improved version is now shown on your digital profile." });
     } catch (err: any) {
       toast({ title: "Improvement failed", description: err.message, variant: "destructive" });
     } finally {
-      setImprovingSection(null);
+      setImprovingKey(null);
     }
   };
 
