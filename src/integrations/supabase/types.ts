@@ -432,6 +432,24 @@ export type Database = {
           read_ct: number
         }[]
       }
+      search_resume_sections: {
+        Args: {
+          filter_section_type?: string
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          content: Json
+          id: string
+          improved_content: Json
+          resume_id: string
+          section_title: string
+          section_type: string
+          similarity: number
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "candidate" | "recruiter"
