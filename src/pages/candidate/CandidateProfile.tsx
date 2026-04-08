@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, User, Search, Share2, Loader2, Target, Mail, Phone, MapPin, Globe, Linkedin, Download, Pencil, Camera, Plus, X, Check, Sparkles } from "lucide-react";
+import { LayoutDashboard, FileText, User, Search, Share2, Loader2, Target, Mail, Phone, MapPin, Globe, Linkedin, Download, Pencil, Camera, Plus, X, Check, Sparkles, Github, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -151,10 +151,17 @@ const CandidateProfile = () => {
 
   // === Edit Social Links ===
   const openEditLinks = () => {
-    setLinksForm({
-      linkedin_url: profile?.linkedin_url || "",
-      website_url: profile?.website_url || "",
-    });
+    // Migrate legacy fields into social_links array
+    const existing: Array<{platform: string; url: string}> = Array.isArray(profile?.social_links) ? [...profile.social_links] : [];
+    // Add legacy fields if not already in array
+    if (profile?.linkedin_url && !existing.some((l: any) => l.url === profile.linkedin_url)) {
+      existing.push({ platform: "LinkedIn", url: profile.linkedin_url });
+    }
+    if (profile?.website_url && !existing.some((l: any) => l.url === profile.website_url)) {
+      existing.push({ platform: "Website", url: profile.website_url });
+    }
+    if (existing.length === 0) existing.push({ platform: "", url: "" });
+    setLinksForm(existing);
     setEditingLinks(true);
   };
 
@@ -163,9 +170,17 @@ const CandidateProfile = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
-      const { error } = await supabase.from("profiles").update(linksForm).eq("id", user.id);
+      const cleanLinks = (linksForm as any[]).filter((l: any) => l.url?.trim());
+      // Also update legacy columns for backward compat
+      const linkedinEntry = cleanLinks.find((l: any) => l.platform?.toLowerCase() === "linkedin");
+      const websiteEntry = cleanLinks.find((l: any) => l.platform?.toLowerCase() === "website");
+      const { error } = await supabase.from("profiles").update({
+        social_links: cleanLinks,
+        linkedin_url: linkedinEntry?.url || null,
+        website_url: websiteEntry?.url || null,
+      } as any).eq("id", user.id);
       if (error) throw error;
-      setProfile((p: any) => ({ ...p, ...linksForm }));
+      setProfile((p: any) => ({ ...p, social_links: cleanLinks, linkedin_url: linkedinEntry?.url || null, website_url: websiteEntry?.url || null }));
       setEditingLinks(false);
       toast({ title: "Links updated!" });
     } catch (err: any) {
