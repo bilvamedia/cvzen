@@ -153,7 +153,7 @@ const Landing = () => {
                 </Button>
               </Link>
               <Link to="/signup?role=recruiter">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary/40 text-white hover:bg-primary/10 hover:border-primary/60 h-12 px-8 font-semibold text-base transition-all duration-300 focus-ring group">
+                <Button size="lg" className="w-full sm:w-auto bg-transparent border-2 border-primary/40 text-white hover:bg-primary/10 hover:border-primary/60 h-12 px-8 font-semibold text-base transition-all duration-300 focus-ring group">
                   I'm a Recruiter
                   <ChevronRight className="h-4 w-4 ml-1 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </Button>
