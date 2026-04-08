@@ -199,6 +199,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_likes: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          visitor_hash: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          visitor_hash: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          visitor_hash?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
