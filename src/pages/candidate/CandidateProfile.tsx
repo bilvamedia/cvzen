@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, User, Search, Share2, Loader2, Target, Mail, Phone, MapPin, Globe, Linkedin, Download, Pencil, Camera, Plus, X, Check, Sparkles } from "lucide-react";
+import { LayoutDashboard, FileText, User, Search, Share2, Loader2, Target, Mail, Phone, MapPin, Globe, Linkedin, Download, Pencil, Camera, Plus, X, Check, Sparkles, Github, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -151,10 +151,17 @@ const CandidateProfile = () => {
 
   // === Edit Social Links ===
   const openEditLinks = () => {
-    setLinksForm({
-      linkedin_url: profile?.linkedin_url || "",
-      website_url: profile?.website_url || "",
-    });
+    // Migrate legacy fields into social_links array
+    const existing: Array<{platform: string; url: string}> = Array.isArray(profile?.social_links) ? [...profile.social_links] : [];
+    // Add legacy fields if not already in array
+    if (profile?.linkedin_url && !existing.some((l: any) => l.url === profile.linkedin_url)) {
+      existing.push({ platform: "LinkedIn", url: profile.linkedin_url });
+    }
+    if (profile?.website_url && !existing.some((l: any) => l.url === profile.website_url)) {
+      existing.push({ platform: "Website", url: profile.website_url });
+    }
+    if (existing.length === 0) existing.push({ platform: "", url: "" });
+    setLinksForm(existing);
     setEditingLinks(true);
   };
 
@@ -163,9 +170,17 @@ const CandidateProfile = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
-      const { error } = await supabase.from("profiles").update(linksForm).eq("id", user.id);
+      const cleanLinks = (linksForm as any[]).filter((l: any) => l.url?.trim());
+      // Also update legacy columns for backward compat
+      const linkedinEntry = cleanLinks.find((l: any) => l.platform?.toLowerCase() === "linkedin");
+      const websiteEntry = cleanLinks.find((l: any) => l.platform?.toLowerCase() === "website");
+      const { error } = await supabase.from("profiles").update({
+        social_links: cleanLinks,
+        linkedin_url: linkedinEntry?.url || null,
+        website_url: websiteEntry?.url || null,
+      } as any).eq("id", user.id);
       if (error) throw error;
-      setProfile((p: any) => ({ ...p, ...linksForm }));
+      setProfile((p: any) => ({ ...p, social_links: cleanLinks, linkedin_url: linkedinEntry?.url || null, website_url: websiteEntry?.url || null }));
       setEditingLinks(false);
       toast({ title: "Links updated!" });
     } catch (err: any) {
@@ -514,17 +529,26 @@ const CandidateProfile = () => {
             </div>
 
             {/* Social Links */}
-            <div className="flex items-center gap-4 mt-3">
-              {profile?.linkedin_url && (
-                <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary">
-                  <Linkedin className="h-3.5 w-3.5 text-primary" /> LinkedIn
-                </a>
-              )}
-              {profile?.website_url && (
-                <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary">
-                  <Globe className="h-3.5 w-3.5 text-primary" /> Website
-                </a>
-              )}
+            <div className="flex flex-wrap items-center gap-3 mt-3">
+              {(() => {
+                const links: Array<{platform: string; url: string}> = Array.isArray(profile?.social_links) && profile.social_links.length > 0
+                  ? profile.social_links
+                  : [
+                      ...(profile?.linkedin_url ? [{ platform: "LinkedIn", url: profile.linkedin_url }] : []),
+                      ...(profile?.website_url ? [{ platform: "Website", url: profile.website_url }] : []),
+                    ];
+                return links.map((link: any, i: number) => {
+                  const name = link.platform || "Link";
+                  const IconComp = name.toLowerCase() === "linkedin" ? Linkedin
+                    : name.toLowerCase() === "github" ? Github
+                    : Globe;
+                  return (
+                    <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary">
+                      <IconComp className="h-3.5 w-3.5 text-primary" /> {name}
+                    </a>
+                  );
+                });
+              })()}
               <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={openEditLinks}>
                 <Pencil className="h-3 w-3 mr-1" /> Edit Links
               </Button>
@@ -612,19 +636,51 @@ const CandidateProfile = () => {
 
       {/* === Edit Social Links Dialog === */}
       <Dialog open={editingLinks} onOpenChange={setEditingLinks}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Social Links</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label className="flex items-center gap-2"><Linkedin className="h-4 w-4" /> LinkedIn URL</Label>
-              <Input value={linksForm.linkedin_url || ""} onChange={e => setLinksForm((p: any) => ({ ...p, linkedin_url: e.target.value }))} placeholder="https://linkedin.com/in/yourname" />
-            </div>
-            <div>
-              <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Website URL</Label>
-              <Input value={linksForm.website_url || ""} onChange={e => setLinksForm((p: any) => ({ ...p, website_url: e.target.value }))} placeholder="https://yoursite.com" />
-            </div>
+          <div className="space-y-3">
+            {(linksForm as any[]).map((link: any, idx: number) => (
+              <div key={idx} className="flex gap-2 items-start">
+                <div className="flex-1 space-y-2">
+                  <Input
+                    placeholder="Platform (e.g. LinkedIn, GitHub, Dribbble)"
+                    value={link.platform || ""}
+                    onChange={e => {
+                      const updated = [...(linksForm as any[])];
+                      updated[idx] = { ...updated[idx], platform: e.target.value };
+                      setLinksForm(updated);
+                    }}
+                  />
+                  <Input
+                    placeholder="https://..."
+                    value={link.url || ""}
+                    onChange={e => {
+                      const updated = [...(linksForm as any[])];
+                      updated[idx] = { ...updated[idx], url: e.target.value };
+                      setLinksForm(updated);
+                    }}
+                  />
+                </div>
+                {(linksForm as any[]).length > 1 && (
+                  <button
+                    onClick={() => setLinksForm((prev: any) => prev.filter((_: any, i: number) => i !== idx))}
+                    className="mt-2 text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full border-dashed"
+              onClick={() => setLinksForm((prev: any) => [...prev, { platform: "", url: "" }])}
+            >
+              <Plus className="h-3 w-3 mr-1" /> Add Link
+            </Button>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingLinks(false)}>Cancel</Button>
