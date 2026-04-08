@@ -40,6 +40,36 @@ serve(async (req) => {
     }
 
     const body = await req.json();
+
+    // Custom prompt mode (e.g. bio generation)
+    if (body.customPrompt && body.prompt) {
+      const aiRes = await fetch("https://api.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: "You are a professional resume and career coach." },
+            { role: "user", content: body.prompt },
+          ],
+          temperature: 0.7,
+        }),
+      });
+      const aiData = await aiRes.json();
+      const text = aiData.choices?.[0]?.message?.content?.trim() || "";
+      if (!text) {
+        return new Response(JSON.stringify({ error: "AI did not return text" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ improved_text: text }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { sectionId, itemIndex } = body;
     if (!sectionId) {
       return new Response(JSON.stringify({ error: "sectionId is required" }), {
