@@ -1,20 +1,21 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText, Users, Sparkles, ArrowRight, Shield, Zap, Brain } from "lucide-react";
+import logoFull from "@/assets/logo-full.jpg";
 import logoMain from "@/assets/logo-main.svg";
 
 const Landing = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
-      <nav className="fixed top-0 w-full z-50 glass-card">
+      <nav className="fixed top-0 w-full z-50 bg-accent/95 backdrop-blur-md border-b border-accent/80">
         <div className="container mx-auto flex items-center justify-between h-16 px-6">
           <div className="flex items-center gap-2">
-            <img src={logoMain} alt="cvZen — Intelligent Hiring OS" className="h-8 w-auto" />
+            <img src={logoMain} alt="cvZen — Intelligent Hiring OS" className="h-10 w-auto" />
           </div>
           <div className="flex items-center gap-3">
             <Link to="/login">
-              <Button variant="ghost" size="sm">Sign in</Button>
+              <Button variant="ghost" size="sm" className="text-white/90 hover:text-white hover:bg-white/10">Sign in</Button>
             </Link>
             <Link to="/signup">
               <Button variant="hero" size="sm">Get Started</Button>
