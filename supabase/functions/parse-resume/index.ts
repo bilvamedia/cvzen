@@ -145,7 +145,11 @@ You must call the extract_resume_sections tool with the parsed data.`;
                 properties: {
                   candidate_name: { type: "string", description: "Full name of the candidate" },
                   candidate_email: { type: "string", description: "Email if found" },
+                  candidate_phone: { type: "string", description: "Phone number if found" },
                   candidate_headline: { type: "string", description: "Professional headline or title" },
+                  candidate_linkedin: { type: "string", description: "LinkedIn URL if found" },
+                  candidate_website: { type: "string", description: "Personal website or portfolio URL if found" },
+                  candidate_address: { type: "string", description: "Location or address if found" },
                   sections: {
                     type: "array",
                     description: "All sections found in the resume, in order",
@@ -271,7 +275,11 @@ You must call the extract_resume_sections tool with the parsed data.`;
     const profileUpdate: Record<string, string> = {};
     if (parsed.candidate_name) profileUpdate.full_name = parsed.candidate_name;
     if (parsed.candidate_email) profileUpdate.email = parsed.candidate_email;
+    if (parsed.candidate_phone) profileUpdate.phone = parsed.candidate_phone;
     if (parsed.candidate_headline) profileUpdate.headline = parsed.candidate_headline;
+    if (parsed.candidate_linkedin) profileUpdate.linkedin_url = parsed.candidate_linkedin;
+    if (parsed.candidate_website) profileUpdate.website_url = parsed.candidate_website;
+    if (parsed.candidate_address) profileUpdate.address = parsed.candidate_address;
     if (Object.keys(profileUpdate).length > 0) {
       await supabase.from("profiles").update(profileUpdate).eq("id", user.id);
     }

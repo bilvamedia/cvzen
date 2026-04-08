@@ -114,6 +114,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -121,10 +122,14 @@ export type Database = {
           full_name: string | null
           headline: string | null
           id: string
+          linkedin_url: string | null
+          phone: string | null
           role: Database["public"]["Enums"]["app_role"] | null
           updated_at: string
+          website_url: string | null
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -132,10 +137,14 @@ export type Database = {
           full_name?: string | null
           headline?: string | null
           id: string
+          linkedin_url?: string | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["app_role"] | null
           updated_at?: string
+          website_url?: string | null
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -143,8 +152,11 @@ export type Database = {
           full_name?: string | null
           headline?: string | null
           id?: string
+          linkedin_url?: string | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["app_role"] | null
           updated_at?: string
+          website_url?: string | null
         }
         Relationships: []
       }
