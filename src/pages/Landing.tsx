@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText, Users, Sparkles, ArrowRight, Shield, Zap, Brain } from "lucide-react";
-import logoSvg from "@/assets/logo.svg";
+import logoMain from "@/assets/logo-main.svg";
 
 const Landing = () => {
   return (
@@ -10,7 +10,7 @@ const Landing = () => {
       <nav className="fixed top-0 w-full z-50 glass-card">
         <div className="container mx-auto flex items-center justify-between h-16 px-6">
           <div className="flex items-center gap-2">
-            <img src={logoSvg} alt="cvZen" className="h-8" />
+            <img src={logoMain} alt="cvZen — Intelligent Hiring OS" className="h-8 w-auto" />
           </div>
           <div className="flex items-center gap-3">
             <Link to="/login">
@@ -112,7 +112,7 @@ const Landing = () => {
         <div className="container mx-auto px-6 flex items-center justify-between">
           <span className="text-sm text-muted-foreground">© 2026 cvZen. All rights reserved.</span>
           <div className="flex items-center gap-2">
-            <img src={logoSvg} alt="cvZen" className="h-5" />
+            <img src={logoMain} alt="cvZen" className="h-5 w-auto" />
           </div>
         </div>
       </footer>
