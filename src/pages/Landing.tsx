@@ -371,14 +371,18 @@ const Landing = () => {
             <span className="text-sm text-muted-foreground">© {new Date().getFullYear()} cvZen. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-6">
-            {["Privacy", "Terms", "Security"].map((link) => (
-              <a
-                key={link}
-                href="#"
+            {[
+              { label: "Privacy", href: "/privacy" },
+              { label: "Terms", href: "/terms" },
+              { label: "Disclaimer", href: "/disclaimer" },
+            ].map((link) => (
+              <Link
+                key={link.label}
+                to={link.href}
                 className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 focus-ring rounded-sm"
               >
-                {link}
-              </a>
+                {link.label}
+              </Link>
             ))}
           </div>
         </div>
