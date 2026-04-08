@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, User, Search, Share2, Loader2, Target, Mail, Phone, MapPin, Globe, Linkedin, Download, Pencil, Camera, Plus, X, Check } from "lucide-react";
+import { LayoutDashboard, FileText, User, Search, Share2, Loader2, Target, Mail, Phone, MapPin, Globe, Linkedin, Download, Pencil, Camera, Plus, X, Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,6 +56,7 @@ const CandidateProfile = () => {
   const [newSectionType, setNewSectionType] = useState("");
   const [newSectionItems, setNewSectionItems] = useState<any[]>([{ title: "", description: "", details: [] }]);
   const [addingSectionLoading, setAddingSectionLoading] = useState(false);
+  const [improvingBio, setImprovingBio] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -254,6 +255,41 @@ const CandidateProfile = () => {
       toast({ title: "Improvement failed", description: err.message, variant: "destructive" });
     } finally {
       setImprovingKey(null);
+    }
+  };
+
+  // === Improve Bio with AI ===
+  const handleImproveBio = async () => {
+    setImprovingBio(true);
+    try {
+      // Gather resume context
+      const resumeContext = sections.map(s => {
+        const content = s.improved_content || s.content;
+        const items = content?.items || [];
+        return `${s.section_title}:\n${items.map((it: any) => [it.title, it.subtitle, it.description, ...(it.details || [])].filter(Boolean).join(" — ")).join("\n")}`;
+      }).join("\n\n");
+
+      const currentBio = profileForm.bio || "";
+      const name = profileForm.full_name || profile?.full_name || "";
+      const headline = profileForm.headline || profile?.headline || "";
+
+      const { data, error } = await supabase.functions.invoke("improve-section", {
+        body: {
+          customPrompt: true,
+          prompt: `You are a professional resume writer. Based on the following resume data, ${currentBio ? "improve this bio" : "write a compelling professional bio"} for ${name || "this candidate"}${headline ? ` who is a ${headline}` : ""}. Keep it concise (2-4 sentences), professional, and highlight key strengths.\n\n${currentBio ? `Current bio: ${currentBio}\n\n` : ""}Resume data:\n${resumeContext}\n\nReturn ONLY the improved bio text, nothing else.`,
+        },
+      });
+      if (error) throw error;
+      if (data?.improved_text) {
+        setProfileForm((p: any) => ({ ...p, bio: data.improved_text }));
+        toast({ title: "Bio generated!", description: "Review and save when ready." });
+      } else if (data?.error) {
+        throw new Error(data.error);
+      }
+    } catch (err: any) {
+      toast({ title: "Bio improvement failed", description: err.message, variant: "destructive" });
+    } finally {
+      setImprovingBio(false);
     }
   };
 
@@ -535,8 +571,21 @@ const CandidateProfile = () => {
               <Input value={profileForm.headline || ""} onChange={e => setProfileForm((p: any) => ({ ...p, headline: e.target.value }))} placeholder="e.g. Senior Software Engineer" />
             </div>
             <div>
-              <Label>Bio</Label>
-              <Textarea value={profileForm.bio || ""} onChange={e => setProfileForm((p: any) => ({ ...p, bio: e.target.value }))} rows={3} />
+              <div className="flex items-center justify-between mb-1">
+                <Label>Bio</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs gap-1"
+                  onClick={handleImproveBio}
+                  disabled={improvingBio}
+                >
+                  {improvingBio ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  {profileForm.bio ? "Improve with AI" : "Generate with AI"}
+                </Button>
+              </div>
+              <Textarea value={profileForm.bio || ""} onChange={e => setProfileForm((p: any) => ({ ...p, bio: e.target.value }))} rows={3} placeholder="Write or generate a professional bio..." />
             </div>
             <div>
               <Label>Email</Label>
