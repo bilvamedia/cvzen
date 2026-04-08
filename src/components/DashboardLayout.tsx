@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LogOut, Menu, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import logoFull from "@/assets/logo-full.jpg";
+import logoMain from "@/assets/logo-main.svg";
 
 interface NavItem {
   label: string;
