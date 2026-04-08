@@ -27,13 +27,28 @@ const CandidateProfile = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const [profileRes, sectionsRes] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", user.id).single(),
-      supabase.from("resume_sections").select("*").eq("user_id", user.id).order("display_order", { ascending: true }),
-    ]);
-
+    // Get profile
+    const profileRes = await supabase.from("profiles").select("*").eq("id", user.id).single();
     if (profileRes.data) setProfile(profileRes.data);
-    if (sectionsRes.data) setSections(sectionsRes.data);
+
+    // Get latest parsed resume, then its sections
+    const { data: latestResume } = await supabase
+      .from("resumes")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("status", "parsed")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (latestResume) {
+      const { data: secs } = await supabase
+        .from("resume_sections")
+        .select("*")
+        .eq("resume_id", latestResume.id)
+        .order("display_order", { ascending: true });
+      if (secs) setSections(secs);
+    }
     setLoading(false);
   };
 
