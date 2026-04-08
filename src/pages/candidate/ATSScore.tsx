@@ -333,7 +333,10 @@ const ATSScore = () => {
                             <h5 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1">
                               <AlertTriangle className="h-3 w-3 text-primary" /> Item-by-Item Analysis
                             </h5>
-                            {section.suggestions.map((item: ItemFeedback, idx: number) => (
+                            {section.suggestions.map((item: ItemFeedback, idx: number) => {
+                              const itemImprovingKey = `${section.section_id}-${idx}`;
+                              const isItemImproving = improvingKey === itemImprovingKey;
+                              return (
                               <div key={idx} className="bg-muted/30 rounded-lg p-4 space-y-2">
                                 <div className="flex items-center justify-between">
                                   <div>
@@ -342,9 +345,24 @@ const ATSScore = () => {
                                       <span className="text-xs text-muted-foreground ml-2">— {item.item_subtitle}</span>
                                     )}
                                   </div>
-                                  <span className={`text-sm font-bold tabular-nums ${getScoreColor(item.item_score)}`}>
-                                    {item.item_score}/100
-                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-sm font-bold tabular-nums ${getScoreColor(item.item_score)}`}>
+                                      {item.item_score}/100
+                                    </span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-2 text-xs"
+                                      onClick={() => improveItem(section.section_id, idx)}
+                                      disabled={!!improvingKey}
+                                    >
+                                      {isItemImproving ? (
+                                        <><Loader2 className="h-3 w-3 animate-spin mr-1" /> Improving...</>
+                                      ) : (
+                                        <><Sparkles className="h-3 w-3 text-primary mr-1" /> Improve</>
+                                      )}
+                                    </Button>
+                                  </div>
                                 </div>
 
                                 {item.strengths && item.strengths.length > 0 && (
@@ -386,7 +404,8 @@ const ATSScore = () => {
                                   </div>
                                 )}
                               </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
 
