@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, User, Search, Target, Loader2, TrendingUp, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { LayoutDashboard, FileText, User, Search, Target, Loader2, TrendingUp, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -17,6 +17,7 @@ const navItems = [
 
 interface SectionScore {
   id: string;
+  section_id: string;
   section_type: string;
   section_title: string;
   score: number;
@@ -62,6 +63,8 @@ const ATSScore = () => {
   const [scoring, setScoring] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [resumeId, setResumeId] = useState<string | null>(null);
+  const [improvingSection, setImprovingSection] = useState<string | null>(null);
+  const [improvedSections, setImprovedSections] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadData();
