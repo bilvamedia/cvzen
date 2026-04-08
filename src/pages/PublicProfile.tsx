@@ -5,6 +5,7 @@ import { Loader2, Globe, Linkedin, ExternalLink, MapPin, Briefcase, ArrowLeft } 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { stripMarkdown } from "@/lib/stripMarkdown";
 
 interface PublicProfileData {
   id: string;
