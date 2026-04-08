@@ -236,10 +236,10 @@ const ATSScore = () => {
         {sectionScores.length > 0 && (
           <>
             {/* Overall Score Card */}
-            <div className="bg-card rounded-xl shadow-card border border-border p-6 mb-6">
-              <div className="flex items-center gap-6">
-                <div className="relative h-28 w-28 shrink-0">
-                  <svg className="h-28 w-28 -rotate-90" viewBox="0 0 120 120">
+            <div className="bg-card rounded-xl shadow-card border border-border p-4 sm:p-6 mb-6">
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0">
+                  <svg className="h-24 w-24 sm:h-28 sm:w-28 -rotate-90" viewBox="0 0 120 120">
                     <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
                     <circle
                       cx="60" cy="60" r="52" fill="none"
@@ -253,11 +253,11 @@ const ATSScore = () => {
                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider">/ 100</span>
                   </div>
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 text-center sm:text-left">
                   <h2 className="text-lg font-semibold text-foreground">Overall ATS Score</h2>
                   <p className={`text-sm font-medium ${getScoreColor(overallScore)}`}>{getScoreLabel(overallScore)}</p>
                   {latestImprovement !== null && (
-                    <div className={`flex items-center gap-1 mt-2 text-sm font-medium ${latestImprovement > 0 ? "text-green-600" : latestImprovement < 0 ? "text-red-500" : "text-muted-foreground"}`}>
+                    <div className={`flex items-center justify-center sm:justify-start gap-1 mt-2 text-sm font-medium ${latestImprovement > 0 ? "text-green-600" : latestImprovement < 0 ? "text-red-500" : "text-muted-foreground"}`}>
                       <TrendingUp className="h-4 w-4" />
                       {latestImprovement > 0 ? "+" : ""}{latestImprovement} points since last scan
                     </div>
