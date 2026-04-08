@@ -1,0 +1,1 @@
+ALTER TABLE public.resume_sections ADD COLUMN improved_content JSONB DEFAULT NULL;
