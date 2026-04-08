@@ -363,6 +363,30 @@ export type Database = {
         }
         Relationships: []
       }
+      shortlisted_candidates: {
+        Row: {
+          candidate_profile_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          recruiter_id: string
+        }
+        Insert: {
+          candidate_profile_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recruiter_id: string
+        }
+        Update: {
+          candidate_profile_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recruiter_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
