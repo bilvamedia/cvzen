@@ -82,11 +82,8 @@ const Landing = () => {
     <div className="min-h-screen bg-background" role="main">
       {/* ──────────── NAV ──────────── */}
       <nav
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          scrolled
-            ? "bg-accent/95 backdrop-blur-md border-b border-white/5 shadow-lg"
-            : "bg-transparent border-b border-white/[0.06]"
-        }`}
+        className="fixed top-0 w-full z-50 border-b border-white/[0.08]"
+        style={{ background: 'hsl(240 55% 16%)' }}
         role="navigation"
         aria-label="Main navigation"
       >
@@ -156,7 +153,7 @@ const Landing = () => {
                 </Button>
               </Link>
               <Link to="/signup?role=recruiter">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/15 text-white/90 hover:bg-white/5 hover:border-white/25 h-12 px-8 font-semibold text-base transition-all duration-300 focus-ring group">
+                <Button size="lg" className="w-full sm:w-auto bg-transparent border-2 border-primary/40 text-white hover:bg-primary/10 hover:border-primary/60 h-12 px-8 font-semibold text-base transition-all duration-300 focus-ring group">
                   I'm a Recruiter
                   <ChevronRight className="h-4 w-4 ml-1 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </Button>
@@ -357,7 +354,7 @@ const Landing = () => {
                 </Button>
               </Link>
               <Link to="/login">
-                <Button size="lg" variant="outline" className="border-white/15 text-white/90 hover:bg-white/5 hover:border-white/25 h-12 px-8 font-semibold transition-all duration-300 focus-ring">
+                <Button size="lg" className="bg-transparent border-2 border-white/20 text-white hover:bg-white/5 hover:border-white/30 h-12 px-8 font-semibold transition-all duration-300 focus-ring">
                   Sign in
                 </Button>
               </Link>
