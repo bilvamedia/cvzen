@@ -61,6 +61,7 @@ const PublicProfile = () => {
 
   // Auth & shortlist state
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [contactInfo, setContactInfo] = useState<{ email: string | null; phone: string | null; address: string | null } | null>(null);
   const [isRecruiter, setIsRecruiter] = useState(false);
   const [isShortlisted, setIsShortlisted] = useState(false);
   const [shortlisting, setShortlisting] = useState(false);
