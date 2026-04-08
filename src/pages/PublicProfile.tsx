@@ -19,11 +19,8 @@ interface PublicProfileData {
   headline: string | null;
   bio: string | null;
   avatar_url: string | null;
-  address: string | null;
   linkedin_url: string | null;
   website_url: string | null;
-  email: string | null;
-  phone: string | null;
   social_links: any;
   profile_slug: string | null;
 }
