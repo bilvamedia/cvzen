@@ -337,15 +337,15 @@ const ATSScore = () => {
                               const itemImprovingKey = `${section.section_id}-${idx}`;
                               const isItemImproving = improvingKey === itemImprovingKey;
                               return (
-                              <div key={idx} className="bg-muted/30 rounded-lg p-4 space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <span className="font-medium text-sm text-foreground">{item.item_title}</span>
+                              <div key={idx} className="bg-muted/30 rounded-lg p-3 sm:p-4 space-y-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <span className="font-medium text-sm text-foreground break-words">{item.item_title}</span>
                                     {item.item_subtitle && (
-                                      <span className="text-xs text-muted-foreground ml-2">— {item.item_subtitle}</span>
+                                      <span className="block sm:inline text-xs text-muted-foreground sm:ml-2">— {item.item_subtitle}</span>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2 shrink-0">
                                     <span className={`text-sm font-bold tabular-nums ${getScoreColor(item.item_score)}`}>
                                       {item.item_score}/100
                                     </span>
