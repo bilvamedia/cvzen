@@ -15,6 +15,7 @@ import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
 import PostJob from "./pages/recruiter/PostJob";
 import RecruiterJobs from "./pages/recruiter/RecruiterJobs";
 import CandidateSearch from "./pages/recruiter/CandidateSearch";
+import InterviewScheduling from "./pages/recruiter/InterviewScheduling";
 import NotFound from "./pages/NotFound";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/recruiter/post-job" element={<PostJob />} />
           <Route path="/recruiter/jobs" element={<RecruiterJobs />} />
           <Route path="/recruiter/search" element={<CandidateSearch />} />
+          <Route path="/recruiter/interviews" element={<InterviewScheduling />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/disclaimer" element={<Disclaimer />} />

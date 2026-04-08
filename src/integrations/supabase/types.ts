@@ -199,6 +199,125 @@ export type Database = {
         }
         Relationships: []
       }
+      interviews: {
+        Row: {
+          candidate_id: string
+          confirmed_time: string | null
+          created_at: string
+          duration_minutes: number
+          id: string
+          job_id: string | null
+          location_details: string | null
+          mode: string
+          notes: string | null
+          proposed_times: Json | null
+          recruiter_id: string
+          scheduling_type: string
+          status: string
+          updated_at: string
+          video_link: string | null
+        }
+        Insert: {
+          candidate_id: string
+          confirmed_time?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          job_id?: string | null
+          location_details?: string | null
+          mode?: string
+          notes?: string | null
+          proposed_times?: Json | null
+          recruiter_id: string
+          scheduling_type?: string
+          status?: string
+          updated_at?: string
+          video_link?: string | null
+        }
+        Update: {
+          candidate_id?: string
+          confirmed_time?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          job_id?: string | null
+          location_details?: string | null
+          mode?: string
+          notes?: string | null
+          proposed_times?: Json | null
+          recruiter_id?: string
+          scheduling_type?: string
+          status?: string
+          updated_at?: string
+          video_link?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interviews_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          company: string
+          created_at: string
+          description: string
+          description_embedding: string | null
+          employment_type: string
+          experience_level: string | null
+          id: string
+          location: string | null
+          recruiter_id: string
+          salary_currency: string | null
+          salary_max: number | null
+          salary_min: number | null
+          skills: Json | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          description: string
+          description_embedding?: string | null
+          employment_type?: string
+          experience_level?: string | null
+          id?: string
+          location?: string | null
+          recruiter_id: string
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          skills?: Json | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          description?: string
+          description_embedding?: string | null
+          employment_type?: string
+          experience_level?: string | null
+          id?: string
+          location?: string | null
+          recruiter_id?: string
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          skills?: Json | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profile_likes: {
         Row: {
           created_at: string
