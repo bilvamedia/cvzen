@@ -119,7 +119,21 @@ const ATSScore = () => {
         .eq("resume_id", resume.id),
     ]);
 
-    if (scoresRes.data) setSectionScores(scoresRes.data as any);
+    if (scoresRes.data) {
+      const normalized = scoresRes.data.map((s: any) => ({
+        ...s,
+        suggestions: Array.isArray(s.suggestions) ? s.suggestions.map((item: any) => ({
+          ...item,
+          strengths: Array.isArray(item.strengths) ? item.strengths : [],
+          improvements: Array.isArray(item.improvements) ? item.improvements : [],
+          keywords_found: Array.isArray(item.keywords_found) ? item.keywords_found : [],
+          keywords_missing: Array.isArray(item.keywords_missing) ? item.keywords_missing : [],
+        })) : [],
+        keywords_found: Array.isArray(s.keywords_found) ? s.keywords_found : [],
+        keywords_missing: Array.isArray(s.keywords_missing) ? s.keywords_missing : [],
+      }));
+      setSectionScores(normalized);
+    }
     if (historyRes.data) setHistory(historyRes.data as any);
     if (sectionsRes.data) {
       const improved = new Set<string>();
