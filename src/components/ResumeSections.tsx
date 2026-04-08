@@ -102,7 +102,7 @@ const ResumeSections = ({ sections, showImproved = true, onImproveItem, improvin
                           </div>
                         )}
                         {item.subtitle && (
-                          <p className="text-sm text-muted-foreground">{item.subtitle}</p>
+                          <p className="text-sm text-muted-foreground">{stripMarkdown(item.subtitle)}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -148,7 +148,7 @@ const ResumeSections = ({ sections, showImproved = true, onImproveItem, improvin
                     </div>
 
                     {item.description && (
-                      <p className="text-sm text-muted-foreground mt-2">{item.description}</p>
+                      <p className="text-sm text-muted-foreground mt-2">{stripMarkdown(item.description)}</p>
                     )}
 
                     {item.level && (
@@ -160,7 +160,7 @@ const ResumeSections = ({ sections, showImproved = true, onImproveItem, improvin
                         {item.details.map((detail, dIdx) => (
                           <li key={dIdx} className="text-sm text-muted-foreground flex gap-2">
                             <span className="text-primary mt-1.5 shrink-0">•</span>
-                            <span>{detail}</span>
+                            <span>{stripMarkdown(detail)}</span>
                           </li>
                         ))}
                       </ul>
