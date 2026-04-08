@@ -442,6 +442,14 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_profile_contact_for_recruiter: {
+        Args: { _profile_id: string }
+        Returns: {
+          address: string
+          email: string
+          phone: string
+        }[]
+      }
       get_public_profile_by_slug: {
         Args: { _slug: string }
         Returns: {
