@@ -6,6 +6,7 @@ import {
   Award, Target, Layers
 } from "lucide-react";
 import logoHeader from "@/assets/logo-header.svg";
+import heroBg from "@/assets/hero-bg.jpg";
 import { useEffect, useRef, useState } from "react";
 
 /* ── Intersection Observer hook for scroll-triggered animations ── */
