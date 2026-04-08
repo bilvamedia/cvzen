@@ -38,20 +38,20 @@ const FLOATING_QUERIES = [
 ];
 
 const CURSOR_QUERIES = [
-  "semantic match: 94%",
-  "vector similarity: 0.91",
-  "skill embedding matched",
-  "context-aware result",
-  "resume parsed ✓",
-  "ATS score: 87",
-  "profile indexed ✓",
-  "talent matched",
-  "12 keywords extracted",
-  "section analyzed",
-  "embedding generated",
-  "smart ranking applied",
-  "role fit: strong",
-  "experience verified",
+  "hiring React developer 3+ years",
+  "need DevOps engineer AWS certified",
+  "looking for product manager SaaS",
+  "senior backend engineer Go microservices",
+  "searching data analyst SQL Python",
+  "want UX researcher user interviews",
+  "seeking cloud architect Azure",
+  "find me Java developers fintech",
+  "remote frontend developer TypeScript",
+  "junior graphic designer Adobe Suite",
+  "project manager PMP agile scrum",
+  "full-stack engineer Node.js MongoDB",
+  "marketing lead growth B2B startups",
+  "iOS developer Swift SwiftUI 4 years",
 ];
 
 interface FloatingTag {
