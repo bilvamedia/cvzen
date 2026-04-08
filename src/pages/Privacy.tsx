@@ -184,7 +184,7 @@ const Privacy = () => {
             </p>
             <div className="bg-muted rounded-lg p-4 mt-2 text-sm">
               <p><strong>Grievance Officer:</strong> cvZen Data Protection Team</p>
-              <p><strong>Email:</strong> privacy@cvzen.io</p>
+              <p><strong>Email:</strong> privacy@cvzen.ai</p>
               <p><strong>Response Time:</strong> Within 72 hours of receipt; resolution within 30 days.</p>
             </div>
           </section>
@@ -192,7 +192,7 @@ const Privacy = () => {
           <section aria-labelledby="dpo">
             <h2 id="dpo" className="text-xl font-semibold text-foreground mb-3">12. Data Protection Officer (EU)</h2>
             <p className="text-sm">
-              For GDPR-related inquiries, contact our Data Protection Officer at <strong>dpo@cvzen.io</strong>. You also have the right to lodge a complaint with your local supervisory authority.
+              For GDPR-related inquiries, contact our Data Protection Officer at <strong>dpo@cvzen.ai</strong>. You also have the right to lodge a complaint with your local supervisory authority.
             </p>
           </section>
 
@@ -207,9 +207,9 @@ const Privacy = () => {
             <h2 id="contact" className="text-xl font-semibold text-foreground mb-3">14. Contact Us</h2>
             <div className="bg-muted rounded-lg p-4 text-sm">
               <p><strong>cvZen</strong></p>
-              <p>Email: privacy@cvzen.io</p>
-              <p>For Indian users: privacy-in@cvzen.io</p>
-              <p>For EU users: dpo@cvzen.io</p>
+              <p>Email: privacy@cvzen.ai</p>
+              <p>For Indian users: privacy-in@cvzen.ai</p>
+              <p>For EU users: dpo@cvzen.ai</p>
             </div>
           </section>
         </div>

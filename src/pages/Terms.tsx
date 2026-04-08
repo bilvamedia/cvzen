@@ -138,7 +138,7 @@ const Terms = () => {
               </ul>
 
               <p className="mt-3 text-xs text-muted-foreground">
-                To request a refund, email <strong>billing@cvzen.io</strong> with your account details and reason for refund.
+                To request a refund, email <strong>billing@cvzen.ai</strong> with your account details and reason for refund.
               </p>
             </div>
           </section>
@@ -212,9 +212,9 @@ const Terms = () => {
             <h2 className="text-xl font-semibold text-foreground mb-3">13. Contact</h2>
             <div className="bg-muted rounded-lg p-4 text-sm">
               <p><strong>cvZen Legal</strong></p>
-              <p>Email: legal@cvzen.io</p>
-              <p>For billing disputes: billing@cvzen.io</p>
-              <p>For Indian consumer grievances: grievance@cvzen.io</p>
+              <p>Email: legal@cvzen.ai</p>
+              <p>For billing disputes: billing@cvzen.ai</p>
+              <p>For Indian consumer grievances: grievance@cvzen.ai</p>
             </div>
           </section>
         </div>
