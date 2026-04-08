@@ -19,11 +19,13 @@ interface ResumeSection {
   section_type: string;
   section_title: string;
   content: { items: SectionItem[] };
+  improved_content?: { items: SectionItem[] } | null;
   display_order: number;
 }
 
 interface Props {
   sections: ResumeSection[];
+  showImproved?: boolean;
 }
 
 // Dynamic icon mapping — falls back gracefully
@@ -41,12 +43,14 @@ const getIconForType = (type: string) => {
   return Tag;
 };
 
-const ResumeSections = ({ sections }: Props) => {
+const ResumeSections = ({ sections, showImproved = true }: Props) => {
   return (
     <div className="space-y-4">
       {sections.map((section) => {
         const Icon = getIconForType(section.section_type);
-        const items = section.content?.items || [];
+        const displayContent = showImproved && section.improved_content ? section.improved_content : section.content;
+        const items = displayContent?.items || [];
+        const isImproved = showImproved && !!section.improved_content;
 
         return (
           <div key={section.id} className="bg-card rounded-xl shadow-card border border-border overflow-hidden">
@@ -56,6 +60,11 @@ const ResumeSections = ({ sections }: Props) => {
                 <Icon className="h-4 w-4 text-primary" />
               </div>
               <h3 className="font-semibold text-foreground">{section.section_title}</h3>
+              {isImproved && (
+                <Badge variant="secondary" className="text-[10px] bg-green-50 text-green-700 border-green-200 ml-2">
+                  AI Enhanced
+                </Badge>
+              )}
               <span className="ml-auto text-xs text-muted-foreground">{items.length} item{items.length !== 1 ? "s" : ""}</span>
             </div>
 
