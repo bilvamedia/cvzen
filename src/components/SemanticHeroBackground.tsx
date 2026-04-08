@@ -75,8 +75,8 @@ interface CursorTag {
 
 // Check if a point is inside the center text zone (percentage-based)
 const isInTextZone = (x: number, y: number): boolean => {
-  // Center block: roughly 15%-85% horizontal, 15%-75% vertical
-  return x > 15 && x < 85 && y > 12 && y < 78;
+  // Center block: 10%-90% horizontal, 10%-80% vertical
+  return x > 10 && x < 90 && y > 10 && y < 82;
 };
 
 // Push a point outside the text zone
