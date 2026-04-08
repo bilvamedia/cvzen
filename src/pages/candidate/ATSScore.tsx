@@ -73,7 +73,7 @@ const ATSScore = () => {
   const [scoring, setScoring] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [resumeId, setResumeId] = useState<string | null>(null);
-  const [improvingSection, setImprovingSection] = useState<string | null>(null);
+  const [improvingKey, setImprovingKey] = useState<string | null>(null);
   const [improvedSections, setImprovedSections] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -145,21 +145,22 @@ const ATSScore = () => {
     setLoading(false);
   };
 
-  const improveSection = async (sectionId: string) => {
-    setImprovingSection(sectionId);
+  const improveItem = async (sectionId: string, itemIndex: number) => {
+    const key = `${sectionId}-${itemIndex}`;
+    setImprovingKey(key);
     try {
       const { data, error } = await supabase.functions.invoke("improve-section", {
-        body: { sectionId },
+        body: { sectionId, itemIndex },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
       setImprovedSections(prev => new Set(prev).add(sectionId));
-      toast({ title: "Section improved!", description: "The improved version is now shown on your digital profile." });
+      toast({ title: "Item improved!", description: "The improved version is now shown on your digital profile." });
     } catch (err: any) {
       toast({ title: "Improvement failed", description: err.message, variant: "destructive" });
     } finally {
-      setImprovingSection(null);
+      setImprovingKey(null);
     }
   };
 
@@ -332,7 +333,10 @@ const ATSScore = () => {
                             <h5 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1">
                               <AlertTriangle className="h-3 w-3 text-primary" /> Item-by-Item Analysis
                             </h5>
-                            {section.suggestions.map((item: ItemFeedback, idx: number) => (
+                            {section.suggestions.map((item: ItemFeedback, idx: number) => {
+                              const itemImprovingKey = `${section.section_id}-${idx}`;
+                              const isItemImproving = improvingKey === itemImprovingKey;
+                              return (
                               <div key={idx} className="bg-muted/30 rounded-lg p-4 space-y-2">
                                 <div className="flex items-center justify-between">
                                   <div>
@@ -341,9 +345,24 @@ const ATSScore = () => {
                                       <span className="text-xs text-muted-foreground ml-2">— {item.item_subtitle}</span>
                                     )}
                                   </div>
-                                  <span className={`text-sm font-bold tabular-nums ${getScoreColor(item.item_score)}`}>
-                                    {item.item_score}/100
-                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-sm font-bold tabular-nums ${getScoreColor(item.item_score)}`}>
+                                      {item.item_score}/100
+                                    </span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-2 text-xs"
+                                      onClick={() => improveItem(section.section_id, idx)}
+                                      disabled={!!improvingKey}
+                                    >
+                                      {isItemImproving ? (
+                                        <><Loader2 className="h-3 w-3 animate-spin mr-1" /> Improving...</>
+                                      ) : (
+                                        <><Sparkles className="h-3 w-3 text-primary mr-1" /> Improve</>
+                                      )}
+                                    </Button>
+                                  </div>
                                 </div>
 
                                 {item.strengths && item.strengths.length > 0 && (
@@ -385,7 +404,8 @@ const ATSScore = () => {
                                   </div>
                                 )}
                               </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
 
@@ -421,49 +441,13 @@ const ATSScore = () => {
                           )}
                         </div>
 
-                        {/* Improve Button */}
-                        <div className="pt-2 border-t border-border">
-                          {improvedSections.has(section.section_id) ? (
-                            <div className="flex items-center gap-2 text-sm text-green-600">
-                              <CheckCircle2 className="h-4 w-4" />
-                              <span className="font-medium">Improved — showing on your digital profile</span>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="ml-auto"
-                                onClick={() => improveSection(section.section_id)}
-                                disabled={improvingSection === section.section_id}
-                              >
-                                {improvingSection === section.section_id ? (
-                                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                                ) : (
-                                  <RefreshCw className="h-3 w-3 mr-1" />
-                                )}
-                                Re-improve
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              variant="hero"
-                              size="sm"
-                              className="w-full"
-                              onClick={() => improveSection(section.section_id)}
-                              disabled={improvingSection === section.section_id}
-                            >
-                              {improvingSection === section.section_id ? (
-                                <>
-                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                  Improving with AI...
-                                </>
-                              ) : (
-                                <>
-                                  <Sparkles className="h-4 w-4 mr-2" />
-                                  Improve This Section with AI
-                                </>
-                              )}
-                            </Button>
-                          )}
-                        </div>
+                        {/* Section status */}
+                        {improvedSections.has(section.section_id) && (
+                          <div className="pt-2 border-t border-border flex items-center gap-2 text-sm text-green-600">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span className="font-medium">Some items improved — showing on your digital profile</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

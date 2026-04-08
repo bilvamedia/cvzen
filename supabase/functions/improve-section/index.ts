@@ -39,12 +39,16 @@ serve(async (req) => {
       });
     }
 
-    const { sectionId } = await req.json();
+    const body = await req.json();
+    const { sectionId, itemIndex } = body;
     if (!sectionId) {
       return new Response(JSON.stringify({ error: "sectionId is required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // itemIndex can be a number (improve single item) or undefined (improve all)
+    const isSingleItem = typeof itemIndex === "number";
 
     // Fetch the section
     const { data: section, error: sectionError } = await supabase
@@ -60,6 +64,15 @@ serve(async (req) => {
       });
     }
 
+    const originalItems = section.content?.items || [];
+    const currentImproved = section.improved_content?.items || [...originalItems];
+
+    if (isSingleItem && (itemIndex < 0 || itemIndex >= originalItems.length)) {
+      return new Response(JSON.stringify({ error: "Invalid itemIndex" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Fetch ATS score/suggestions for this section
     const { data: atsScore } = await supabase
       .from("ats_section_scores")
@@ -67,13 +80,36 @@ serve(async (req) => {
       .eq("section_id", sectionId)
       .single();
 
-    const suggestions = atsScore?.suggestions || [];
-    const keywordsMissing = atsScore?.keywords_missing || [];
+    const allSuggestions = Array.isArray(atsScore?.suggestions) ? atsScore.suggestions : [];
+    const keywordsMissing = Array.isArray(atsScore?.keywords_missing) ? atsScore.keywords_missing : [];
     const feedback = atsScore?.feedback || "";
 
-    const systemPrompt = `You are an expert resume writer and ATS optimization specialist. You will receive a resume section with its original content, ATS feedback, suggestions for improvement, and missing keywords.
+    // Build content to improve
+    const itemsToImprove = isSingleItem ? [originalItems[itemIndex]] : originalItems;
+    
+    // Find relevant item-level suggestions
+    let itemSuggestionText = "";
+    if (isSingleItem) {
+      const itemTitle = originalItems[itemIndex]?.title || "";
+      // Find matching item feedback from ATS suggestions
+      const matchingFeedback = allSuggestions.find((s: any) => 
+        s.item_title && itemTitle && s.item_title.toLowerCase().includes(itemTitle.toLowerCase().substring(0, 20))
+      );
+      if (matchingFeedback) {
+        const improvements = Array.isArray(matchingFeedback.improvements) ? matchingFeedback.improvements : [];
+        const missingKw = Array.isArray(matchingFeedback.keywords_missing) ? matchingFeedback.keywords_missing : [];
+        itemSuggestionText = `
+SPECIFIC IMPROVEMENTS FOR THIS ITEM:
+${improvements.map((s: string, i: number) => `${i + 1}. ${s}`).join("\n")}
 
-Your task is to IMPROVE the section content while:
+MISSING KEYWORDS FOR THIS ITEM:
+${missingKw.join(", ")}`;
+      }
+    }
+
+    const systemPrompt = `You are an expert resume writer and ATS optimization specialist. You will receive ${isSingleItem ? "a single resume item" : "resume section items"} to improve.
+
+Your task is to IMPROVE the content while:
 1. Preserving all factual information (dates, company names, titles, degrees, etc.)
 2. Incorporating the specific suggestions provided
 3. Adding missing keywords naturally where they fit
@@ -81,9 +117,39 @@ Your task is to IMPROVE the section content while:
 5. Improving ATS compatibility without making it sound robotic
 6. Keeping the same JSON structure as the original content
 
-IMPORTANT: Return the improved content in the EXACT same JSON structure as the input. Each item should have the same fields (title, subtitle, date_range, location, description, details, tags, etc.) but with improved text.
-
+IMPORTANT: Return the improved content in the EXACT same JSON structure. Each item should have the same fields but with improved text.
 You must call the return_improved_content tool with the improved items.`;
+
+    const userMessage = isSingleItem
+      ? `Improve this single item from the "${section.section_title}" section.
+
+ORIGINAL ITEM:
+${JSON.stringify(itemsToImprove[0], null, 2)}
+
+ATS SECTION FEEDBACK: ${feedback}
+${itemSuggestionText}
+
+SECTION-LEVEL MISSING KEYWORDS: ${keywordsMissing.join(", ")}
+
+Return the improved version of this single item.`
+      : `Improve this "${section.section_title}" section.
+
+ORIGINAL CONTENT:
+${JSON.stringify(itemsToImprove, null, 2)}
+
+ATS FEEDBACK: ${feedback}
+
+SUGGESTIONS TO IMPLEMENT:
+${allSuggestions.map((s: any) => {
+  if (typeof s === "string") return s;
+  const improvements = Array.isArray(s.improvements) ? s.improvements : [];
+  return `${s.item_title || "General"}: ${improvements.join("; ")}`;
+}).join("\n")}
+
+MISSING KEYWORDS TO INCORPORATE:
+${keywordsMissing.join(", ")}
+
+Return the improved version preserving the same JSON structure.`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -95,30 +161,14 @@ You must call the return_improved_content tool with the improved items.`;
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: `Improve this "${section.section_title}" section.
-
-ORIGINAL CONTENT:
-${JSON.stringify(section.content, null, 2)}
-
-ATS FEEDBACK: ${feedback}
-
-SUGGESTIONS TO IMPLEMENT:
-${suggestions.map((s: string, i: number) => `${i + 1}. ${s}`).join("\n")}
-
-MISSING KEYWORDS TO INCORPORATE:
-${keywordsMissing.join(", ")}
-
-Return the improved version preserving the same JSON structure.`,
-          },
+          { role: "user", content: userMessage },
         ],
         tools: [
           {
             type: "function",
             function: {
               name: "return_improved_content",
-              description: "Return the improved section content",
+              description: "Return the improved content",
               parameters: {
                 type: "object",
                 properties: {
@@ -181,17 +231,26 @@ Return the improved version preserving the same JSON structure.`,
       }
     }
 
-    if (!parsed?.items) {
+    if (!parsed?.items || parsed.items.length === 0) {
       console.error("AI did not return improved content");
       return new Response(JSON.stringify({ error: "AI did not return improved content" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Save improved content (original stays in `content`)
+    // Merge: if single item, replace just that index in the improved array
+    let finalItems: any[];
+    if (isSingleItem) {
+      finalItems = [...currentImproved];
+      finalItems[itemIndex] = parsed.items[0];
+    } else {
+      finalItems = parsed.items;
+    }
+
+    // Save improved content
     const { error: updateError } = await supabase
       .from("resume_sections")
-      .update({ improved_content: { items: parsed.items } })
+      .update({ improved_content: { items: finalItems } })
       .eq("id", sectionId);
 
     if (updateError) {
@@ -203,7 +262,8 @@ Return the improved version preserving the same JSON structure.`,
 
     return new Response(JSON.stringify({
       success: true,
-      improved_content: { items: parsed.items },
+      improved_content: { items: finalItems },
+      improved_index: isSingleItem ? itemIndex : null,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     console.error("improve-section error:", error);
