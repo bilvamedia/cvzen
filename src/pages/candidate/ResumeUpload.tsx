@@ -8,7 +8,7 @@ import ResumeSections from "@/components/ResumeSections";
 
 const navItems = [
   { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
-  { label: "My Resume", href: "/candidate/resume", icon: FileText },
+  { label: "My CV", href: "/candidate/resume", icon: FileText },
   { label: "Digital Profile", href: "/candidate/profile", icon: User },
   { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
   { label: "Search Jobs", href: "/candidate/search", icon: Search },
@@ -122,7 +122,7 @@ const ResumeUpload = () => {
 
       setResumeStatus("parsed");
       toast({
-        title: "Resume parsed!",
+        title: "CV parsed!",
         description: `${fnData.sections_count} sections extracted successfully.`,
       });
 
@@ -162,8 +162,8 @@ const ResumeUpload = () => {
   return (
     <DashboardLayout navItems={navItems} role="candidate">
       <div className="max-w-3xl">
-        <h1 className="text-2xl font-bold text-foreground mb-1">My Resume</h1>
-        <p className="text-muted-foreground mb-8">Upload your resume for AI-powered parsing and analysis.</p>
+        <h1 className="text-2xl font-bold text-foreground mb-1">My CV</h1>
+        <p className="text-muted-foreground mb-8">Upload your CV for AI-powered parsing and analysis.</p>
 
         {/* Upload zone */}
         <div
@@ -178,7 +178,7 @@ const ResumeUpload = () => {
             <div className="flex flex-col items-center">
               <Loader2 className="h-12 w-12 text-primary mb-4 animate-spin" />
               <p className="font-medium text-foreground mb-1">
-                {uploading ? "Uploading resume..." : "AI is parsing your resume..."}
+                {uploading ? "Uploading CV..." : "AI is parsing your CV..."}
               </p>
               <p className="text-sm text-muted-foreground">This may take a moment</p>
             </div>
@@ -197,7 +197,7 @@ const ResumeUpload = () => {
           ) : (
             <div className="flex flex-col items-center">
               <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="font-medium text-foreground mb-1">Drop your resume here</p>
+              <p className="font-medium text-foreground mb-1">Drop your CV here</p>
               <p className="text-sm text-muted-foreground mb-4">PDF or DOCX, up to 10MB</p>
               <label>
                 <input
@@ -225,9 +225,9 @@ const ResumeUpload = () => {
             {resumeStatus === "error" && <AlertCircle className="h-4 w-4" />}
             {resumeStatus === "parsing" && <Loader2 className="h-4 w-4 animate-spin" />}
             <span className="font-medium">
-              {resumeStatus === "parsed" && "Resume parsed successfully"}
+              {resumeStatus === "parsed" && "CV parsed successfully"}
               {resumeStatus === "error" && "Parsing failed — try again"}
-              {resumeStatus === "uploaded" && "Resume uploaded"}
+              {resumeStatus === "uploaded" && "CV uploaded"}
               {resumeStatus === "parsing" && "Parsing in progress..."}
             </span>
             {resumeStatus === "parsed" && (
@@ -247,7 +247,7 @@ const ResumeUpload = () => {
             <ResumeSections sections={sections} />
           ) : (
             <div className="bg-card rounded-xl p-8 shadow-card border border-border text-center">
-              <p className="text-muted-foreground text-sm">Upload and parse a resume to see extracted sections here.</p>
+              <p className="text-muted-foreground text-sm">Upload and parse a CV to see extracted sections here.</p>
             </div>
           )}
         </div>

@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
-  { label: "My Resume", href: "/candidate/resume", icon: FileText },
+  { label: "My CV", href: "/candidate/resume", icon: FileText },
   { label: "Digital Profile", href: "/candidate/profile", icon: User },
   { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
   { label: "Search Jobs", href: "/candidate/search", icon: Search },
@@ -71,7 +71,7 @@ const CandidateDashboard = () => {
 
   const statCards = [
     { label: "Profile Completeness", value: `${stats.completeness}%`, color: "text-primary" },
-    { label: "Resume Sections", value: String(stats.sections), color: "text-accent" },
+    { label: "CV Sections", value: String(stats.sections), color: "text-accent" },
     { label: "ATS Score", value: stats.atsScore ? `${stats.atsScore}/100` : "N/A", color: "text-foreground" },
   ];
 
@@ -99,7 +99,7 @@ const CandidateDashboard = () => {
                 <FileText className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">Upload Resume</h3>
+                <h3 className="font-semibold text-foreground">Upload CV</h3>
                 <p className="text-xs text-muted-foreground">Get AI-powered analysis</p>
               </div>
             </div>
