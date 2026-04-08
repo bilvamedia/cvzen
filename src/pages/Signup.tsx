@@ -34,6 +34,17 @@ const Signup = () => {
       if (data.user) {
         await supabase.from("user_roles").insert({ user_id: data.user.id, role });
         await supabase.from("profiles").insert({ id: data.user.id, full_name: fullName, email, role });
+
+        // Send welcome email (fire-and-forget)
+        supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "welcome-signup",
+            recipientEmail: email,
+            idempotencyKey: `welcome-${data.user.id}`,
+            templateData: { name: fullName, role },
+          },
+        }).catch(console.error);
+
         toast({ title: "Account created!", description: "Welcome to cvZen." });
         navigate(role === "recruiter" ? "/recruiter" : "/candidate");
       }
