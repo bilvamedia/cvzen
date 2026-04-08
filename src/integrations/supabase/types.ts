@@ -125,6 +125,7 @@ export type Database = {
           linkedin_url: string | null
           phone: string | null
           role: Database["public"]["Enums"]["app_role"] | null
+          social_links: Json | null
           updated_at: string
           website_url: string | null
         }
@@ -140,6 +141,7 @@ export type Database = {
           linkedin_url?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["app_role"] | null
+          social_links?: Json | null
           updated_at?: string
           website_url?: string | null
         }
@@ -155,6 +157,7 @@ export type Database = {
           linkedin_url?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["app_role"] | null
+          social_links?: Json | null
           updated_at?: string
           website_url?: string | null
         }
