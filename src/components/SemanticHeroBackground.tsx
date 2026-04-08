@@ -73,6 +73,27 @@ interface CursorTag {
   life: number;
 }
 
+// Check if a point is inside the center text zone (percentage-based)
+const isInTextZone = (x: number, y: number): boolean => {
+  // Center block: roughly 15%-85% horizontal, 15%-75% vertical
+  return x > 15 && x < 85 && y > 12 && y < 78;
+};
+
+// Push a point outside the text zone
+const pushOutOfZone = (x: number, y: number): { x: number; y: number } => {
+  if (!isInTextZone(x, y)) return { x, y };
+  // Push to nearest edge
+  const distLeft = x - 15;
+  const distRight = 85 - x;
+  const distTop = y - 12;
+  const distBottom = 78 - y;
+  const min = Math.min(distLeft, distRight, distTop, distBottom);
+  if (min === distLeft) return { x: Math.random() * 13, y };
+  if (min === distRight) return { x: 87 + Math.random() * 12, y };
+  if (min === distTop) return { x, y: Math.random() * 10 };
+  return { x, y: 80 + Math.random() * 18 };
+};
+
 export const SemanticHeroBackground = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [floatingTags, setFloatingTags] = useState<FloatingTag[]>([]);
@@ -81,18 +102,23 @@ export const SemanticHeroBackground = () => {
   const cursorId = useRef(0);
   const animFrame = useRef<number>();
 
-  // Initialize floating tags
+  // Initialize floating tags — place them outside the text zone
   useEffect(() => {
-    const tags: FloatingTag[] = FLOATING_QUERIES.map((text, i) => ({
-      id: i,
-      text,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      speed: 0.15 + Math.random() * 0.25,
-      opacity: 0.06 + Math.random() * 0.08,
-      size: 11 + Math.random() * 4,
-      delay: Math.random() * 20,
-    }));
+    const tags: FloatingTag[] = FLOATING_QUERIES.map((text, i) => {
+      let x = Math.random() * 100;
+      let y = Math.random() * 100;
+      const pushed = pushOutOfZone(x, y);
+      return {
+        id: i,
+        text,
+        x: pushed.x,
+        y: pushed.y,
+        speed: 0.15 + Math.random() * 0.25,
+        opacity: 0.08 + Math.random() * 0.1,
+        size: 11 + Math.random() * 3,
+        delay: Math.random() * 20,
+      };
+    });
     setFloatingTags(tags);
   }, []);
 
@@ -106,15 +132,18 @@ export const SemanticHeroBackground = () => {
       setFloatingTags((prev) =>
         prev.map((tag) => {
           const t = elapsed + tag.delay;
-          return {
-            ...tag,
-            x: ((tag.x + Math.sin(t * tag.speed * 0.5) * 0.03 + 100) % 100),
-            y: ((tag.y - tag.speed * 0.02 + 100) % 100),
-          };
+          let newX = ((tag.x + Math.sin(t * tag.speed * 0.5) * 0.03 + 100) % 100);
+          let newY = ((tag.y - tag.speed * 0.02 + 100) % 100);
+          // If drifted into text zone, push back out
+          if (isInTextZone(newX, newY)) {
+            const pushed = pushOutOfZone(newX, newY);
+            newX = pushed.x;
+            newY = pushed.y;
+          }
+          return { ...tag, x: newX, y: newY };
         })
       );
 
-      // Fade out old cursor tags
       setCursorTags((prev) =>
         prev
           .map((t) => ({ ...t, life: t.life - 0.016 }))
@@ -132,7 +161,7 @@ export const SemanticHeroBackground = () => {
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const now = Date.now();
-      if (now - lastSpawn.current < 320) return; // throttle
+      if (now - lastSpawn.current < 320) return;
       lastSpawn.current = now;
 
       const rect = containerRef.current?.getBoundingClientRect();
@@ -141,16 +170,18 @@ export const SemanticHeroBackground = () => {
       const x = ((e.clientX - rect.left) / rect.width) * 100;
       const y = ((e.clientY - rect.top) / rect.height) * 100;
 
+      // Don't spawn cursor tags inside the text zone
+      if (isInTextZone(x, y)) return;
+
       const text = CURSOR_QUERIES[cursorId.current % CURSOR_QUERIES.length];
       cursorId.current++;
 
-      // Offset slightly so it doesn't sit right under cursor
-      const offsetX = (Math.random() - 0.5) * 12;
-      const offsetY = (Math.random() - 0.5) * 8;
+      const offsetX = (Math.random() - 0.5) * 10;
+      const offsetY = (Math.random() - 0.5) * 6;
 
       setCursorTags((prev) => [
-        ...prev.slice(-12), // keep max 12
-        { id: cursorId.current, text, x: x + offsetX, y: y + offsetY, life: 1.8 },
+        ...prev.slice(-10),
+        { id: cursorId.current, text, x: x + offsetX, y: y + offsetY, life: 2.2 },
       ]);
     },
     []
@@ -167,7 +198,7 @@ export const SemanticHeroBackground = () => {
       {floatingTags.map((tag) => (
         <span
           key={tag.id}
-          className="absolute whitespace-nowrap font-mono select-none transition-none will-change-transform"
+          className="absolute whitespace-nowrap font-mono select-none will-change-transform"
           style={{
             left: `${tag.x}%`,
             top: `${tag.y}%`,
