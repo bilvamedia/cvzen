@@ -241,7 +241,7 @@ const PublicProfile = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Header */}
-      <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--cvzen-navy))] text-white">
+      <div className="bg-gradient-to-br from-primary to-accent text-white">
         <div className="max-w-4xl mx-auto px-6 py-12 md:py-16">
           <div className="flex items-center justify-between mb-8">
             <Link to="/" className="inline-flex items-center text-white/70 hover:text-white text-sm transition-colors">
