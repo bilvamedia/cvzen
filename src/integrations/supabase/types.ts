@@ -14,6 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      ats_score_history: {
+        Row: {
+          created_at: string
+          id: string
+          overall_score: number
+          resume_id: string
+          section_scores: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          overall_score?: number
+          resume_id: string
+          section_scores?: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          overall_score?: number
+          resume_id?: string
+          section_scores?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ats_score_history_resume_id_fkey"
+            columns: ["resume_id"]
+            isOneToOne: false
+            referencedRelation: "resumes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ats_section_scores: {
+        Row: {
+          created_at: string
+          feedback: string | null
+          id: string
+          keywords_found: Json
+          keywords_missing: Json
+          resume_id: string
+          score: number
+          section_id: string
+          section_title: string
+          section_type: string
+          suggestions: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          keywords_found?: Json
+          keywords_missing?: Json
+          resume_id: string
+          score?: number
+          section_id: string
+          section_title: string
+          section_type: string
+          suggestions?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          keywords_found?: Json
+          keywords_missing?: Json
+          resume_id?: string
+          score?: number
+          section_id?: string
+          section_title?: string
+          section_type?: string
+          suggestions?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ats_section_scores_resume_id_fkey"
+            columns: ["resume_id"]
+            isOneToOne: false
+            referencedRelation: "resumes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ats_section_scores_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "resume_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
