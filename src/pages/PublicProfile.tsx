@@ -47,24 +47,11 @@ const PublicProfile = () => {
 
       setProfile(data as PublicProfileData);
 
-      // Load resume sections (public view — only if user has parsed resume)
-      const { data: latestResume } = await supabase
-        .from("resumes")
-        .select("id")
-        .eq("user_id", data.id)
-        .eq("status", "parsed")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      if (latestResume) {
-        const { data: secs } = await supabase
-          .from("resume_sections")
-          .select("id, section_title, section_type, content, improved_content, display_order")
-          .eq("resume_id", latestResume.id)
-          .order("display_order", { ascending: true });
-        if (secs) setSections(secs);
-      }
+      // Load resume sections via secure RPC function
+      const { data: secs } = await supabase.rpc("get_public_resume_sections", {
+        _profile_id: data.id,
+      });
+      if (secs && Array.isArray(secs)) setSections(secs);
     } catch {
       setNotFound(true);
     } finally {
