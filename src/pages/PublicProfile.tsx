@@ -177,8 +177,8 @@ const PublicProfile = () => {
                           <div>
                             {item.title && (
                               <h3 className="font-semibold text-foreground">
-                                {item.title}
-                                {item.subtitle && <span className="font-normal text-muted-foreground"> — {item.subtitle}</span>}
+                                {stripMarkdown(item.title)}
+                                {item.subtitle && <span className="font-normal text-muted-foreground"> — {stripMarkdown(item.subtitle)}</span>}
                               </h3>
                             )}
                           </div>
@@ -188,13 +188,13 @@ const PublicProfile = () => {
                             </span>
                           )}
                         </div>
-                        {item.description && (
-                          <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                         {item.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{stripMarkdown(item.description)}</p>
                         )}
                         {item.details?.length > 0 && (
                           <ul className="list-disc list-inside mt-2 text-sm text-muted-foreground space-y-1 ml-1">
                             {item.details.map((d: string, di: number) => (
-                              <li key={di}>{d}</li>
+                              <li key={di}>{stripMarkdown(d)}</li>
                             ))}
                           </ul>
                         )}
