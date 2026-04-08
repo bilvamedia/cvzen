@@ -330,9 +330,9 @@ const Landing = () => {
       </section>
 
       {/* ──────────── FINAL CTA ──────────── */}
-      <section ref={cta.ref} className="py-20 md:py-28 hero-gradient relative overflow-hidden" aria-label="Call to action">
-        <div className="absolute inset-0 grid-bg opacity-20" aria-hidden="true" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/6 rounded-full blur-[200px]" aria-hidden="true" />
+      <section ref={cta.ref} className="py-20 md:py-28 relative overflow-hidden" aria-label="Call to action">
+        <img src={heroBg} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1920} height={1080} />
+        <div className="absolute inset-0 bg-black/30" aria-hidden="true" />
         <div className="container mx-auto px-6 text-center relative z-10">
           <div className={`max-w-2xl mx-auto opacity-0 ${cta.inView ? 'animate-fade-in' : ''}`}>
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 mb-6">
