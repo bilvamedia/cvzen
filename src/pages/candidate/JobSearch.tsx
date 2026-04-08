@@ -1,6 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, User, Search, Sparkles } from "lucide-react";
+import { LayoutDashboard, FileText, User, Search, Sparkles, Target } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -8,6 +8,7 @@ const navItems = [
   { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
   { label: "My Resume", href: "/candidate/resume", icon: FileText },
   { label: "Digital Profile", href: "/candidate/profile", icon: User },
+  { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
   { label: "Search Jobs", href: "/candidate/search", icon: Search },
 ];
 

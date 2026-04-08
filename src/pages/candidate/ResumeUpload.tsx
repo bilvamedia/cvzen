@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, User, Search, Upload, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { LayoutDashboard, FileText, User, Search, Upload, CheckCircle2, Loader2, AlertCircle, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +10,7 @@ const navItems = [
   { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
   { label: "My Resume", href: "/candidate/resume", icon: FileText },
   { label: "Digital Profile", href: "/candidate/profile", icon: User },
+  { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
   { label: "Search Jobs", href: "/candidate/search", icon: Search },
 ];
 
