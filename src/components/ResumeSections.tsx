@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Briefcase, GraduationCap, Award, Code, Globe, Heart, BookOpen, Star, Tag, MapPin, Calendar, ExternalLink, Sparkles, Loader2, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { stripMarkdown } from "@/lib/stripMarkdown";
 
 interface SectionItem {
   title?: string;
