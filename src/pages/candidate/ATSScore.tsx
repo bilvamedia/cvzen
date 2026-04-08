@@ -15,6 +15,16 @@ const navItems = [
   { label: "Search Jobs", href: "/candidate/search", icon: Search },
 ];
 
+interface ItemFeedback {
+  item_title: string;
+  item_subtitle?: string;
+  item_score: number;
+  strengths?: string[];
+  improvements: string[];
+  keywords_found?: string[];
+  keywords_missing?: string[];
+}
+
 interface SectionScore {
   id: string;
   section_id: string;
@@ -22,7 +32,7 @@ interface SectionScore {
   section_title: string;
   score: number;
   feedback: string;
-  suggestions: string[];
+  suggestions: ItemFeedback[];
   keywords_found: string[];
   keywords_missing: string[];
 }
@@ -302,29 +312,75 @@ const ATSScore = () => {
                           <p className="text-sm text-muted-foreground">{section.feedback}</p>
                         </div>
 
-                        {/* Suggestions */}
+                        {/* Per-Item Feedback */}
                         {section.suggestions.length > 0 && (
-                          <div>
-                            <h5 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-                              <AlertTriangle className="h-3 w-3 text-orange-500" /> Improvements
+                          <div className="space-y-3">
+                            <h5 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1">
+                              <AlertTriangle className="h-3 w-3 text-primary" /> Item-by-Item Analysis
                             </h5>
-                            <ul className="space-y-1.5">
-                              {section.suggestions.map((s, i) => (
-                                <li key={i} className="text-sm text-muted-foreground flex gap-2">
-                                  <span className="text-orange-500 shrink-0 mt-0.5">→</span>
-                                  <span>{s}</span>
-                                </li>
-                              ))}
-                            </ul>
+                            {section.suggestions.map((item: ItemFeedback, idx: number) => (
+                              <div key={idx} className="bg-muted/30 rounded-lg p-4 space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <span className="font-medium text-sm text-foreground">{item.item_title}</span>
+                                    {item.item_subtitle && (
+                                      <span className="text-xs text-muted-foreground ml-2">— {item.item_subtitle}</span>
+                                    )}
+                                  </div>
+                                  <span className={`text-sm font-bold tabular-nums ${getScoreColor(item.item_score)}`}>
+                                    {item.item_score}/100
+                                  </span>
+                                </div>
+
+                                {item.strengths && item.strengths.length > 0 && (
+                                  <div>
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-green-600">Strengths</span>
+                                    <ul className="mt-1 space-y-0.5">
+                                      {item.strengths.map((s, i) => (
+                                        <li key={i} className="text-xs text-muted-foreground flex gap-1.5">
+                                          <CheckCircle2 className="h-3 w-3 text-green-500 shrink-0 mt-0.5" />
+                                          <span>{s}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+
+                                {item.improvements.length > 0 && (
+                                  <div>
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-orange-600">Improvements</span>
+                                    <ul className="mt-1 space-y-0.5">
+                                      {item.improvements.map((s, i) => (
+                                        <li key={i} className="text-xs text-muted-foreground flex gap-1.5">
+                                          <span className="text-orange-500 shrink-0">→</span>
+                                          <span>{s}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+
+                                {((item.keywords_found && item.keywords_found.length > 0) || (item.keywords_missing && item.keywords_missing.length > 0)) && (
+                                  <div className="flex flex-wrap gap-1 pt-1">
+                                    {item.keywords_found?.map((k, i) => (
+                                      <Badge key={`f-${i}`} variant="secondary" className="text-[10px] bg-green-50 text-green-700 border-green-200">{k}</Badge>
+                                    ))}
+                                    {item.keywords_missing?.map((k, i) => (
+                                      <Badge key={`m-${i}`} variant="outline" className="text-[10px] border-red-200 text-red-600">{k}</Badge>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
                           </div>
                         )}
 
-                        {/* Keywords */}
+                        {/* Section-level Keywords */}
                         <div className="grid grid-cols-2 gap-4">
                           {section.keywords_found.length > 0 && (
                             <div>
                               <h5 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-                                <CheckCircle2 className="h-3 w-3 text-green-500" /> Keywords Found
+                                <CheckCircle2 className="h-3 w-3 text-green-500" /> Section Keywords Found
                               </h5>
                               <div className="flex flex-wrap gap-1">
                                 {section.keywords_found.map((k, i) => (
