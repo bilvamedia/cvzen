@@ -208,12 +208,12 @@ const ATSScore = () => {
   return (
     <DashboardLayout navItems={navItems} role="candidate">
       <div className="max-w-4xl">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-foreground mb-1">ATS Score Analysis</h1>
-            <p className="text-muted-foreground">Section-by-section ATS compatibility scoring with improvement tracking.</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-1">ATS Score Analysis</h1>
+            <p className="text-sm text-muted-foreground">Section-by-section ATS compatibility scoring with improvement tracking.</p>
           </div>
-          <Button variant="hero" onClick={runScoring} disabled={scoring || !resumeId}>
+          <Button variant="hero" onClick={runScoring} disabled={scoring || !resumeId} className="w-full sm:w-auto shrink-0">
             {scoring ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
             {scoring ? "Scoring..." : sectionScores.length > 0 ? "Re-Score" : "Run ATS Score"}
           </Button>
@@ -236,10 +236,10 @@ const ATSScore = () => {
         {sectionScores.length > 0 && (
           <>
             {/* Overall Score Card */}
-            <div className="bg-card rounded-xl shadow-card border border-border p-6 mb-6">
-              <div className="flex items-center gap-6">
-                <div className="relative h-28 w-28 shrink-0">
-                  <svg className="h-28 w-28 -rotate-90" viewBox="0 0 120 120">
+            <div className="bg-card rounded-xl shadow-card border border-border p-4 sm:p-6 mb-6">
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0">
+                  <svg className="h-24 w-24 sm:h-28 sm:w-28 -rotate-90" viewBox="0 0 120 120">
                     <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
                     <circle
                       cx="60" cy="60" r="52" fill="none"
@@ -253,11 +253,11 @@ const ATSScore = () => {
                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider">/ 100</span>
                   </div>
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 text-center sm:text-left">
                   <h2 className="text-lg font-semibold text-foreground">Overall ATS Score</h2>
                   <p className={`text-sm font-medium ${getScoreColor(overallScore)}`}>{getScoreLabel(overallScore)}</p>
                   {latestImprovement !== null && (
-                    <div className={`flex items-center gap-1 mt-2 text-sm font-medium ${latestImprovement > 0 ? "text-green-600" : latestImprovement < 0 ? "text-red-500" : "text-muted-foreground"}`}>
+                    <div className={`flex items-center justify-center sm:justify-start gap-1 mt-2 text-sm font-medium ${latestImprovement > 0 ? "text-green-600" : latestImprovement < 0 ? "text-red-500" : "text-muted-foreground"}`}>
                       <TrendingUp className="h-4 w-4" />
                       {latestImprovement > 0 ? "+" : ""}{latestImprovement} points since last scan
                     </div>
@@ -337,15 +337,15 @@ const ATSScore = () => {
                               const itemImprovingKey = `${section.section_id}-${idx}`;
                               const isItemImproving = improvingKey === itemImprovingKey;
                               return (
-                              <div key={idx} className="bg-muted/30 rounded-lg p-4 space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <span className="font-medium text-sm text-foreground">{item.item_title}</span>
+                              <div key={idx} className="bg-muted/30 rounded-lg p-3 sm:p-4 space-y-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <span className="font-medium text-sm text-foreground break-words">{item.item_title}</span>
                                     {item.item_subtitle && (
-                                      <span className="text-xs text-muted-foreground ml-2">— {item.item_subtitle}</span>
+                                      <span className="block sm:inline text-xs text-muted-foreground sm:ml-2">— {item.item_subtitle}</span>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2 shrink-0">
                                     <span className={`text-sm font-bold tabular-nums ${getScoreColor(item.item_score)}`}>
                                       {item.item_score}/100
                                     </span>
@@ -410,7 +410,7 @@ const ATSScore = () => {
                         )}
 
                         {/* Section-level Keywords */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {section.keywords_found.length > 0 && (
                             <div>
                               <h5 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-2 flex items-center gap-1">

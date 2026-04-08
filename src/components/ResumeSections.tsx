@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Briefcase, GraduationCap, Award, Code, Globe, Heart, BookOpen, Star, Tag, MapPin, Calendar, ExternalLink, Sparkles, Loader2, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { stripMarkdown } from "@/lib/stripMarkdown";
 
 interface SectionItem {
   title?: string;
@@ -89,9 +90,9 @@ const ResumeSections = ({ sections, showImproved = true, onImproveItem, improvin
                             <h4 className="font-medium text-foreground">
                               {item.url ? (
                                 <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-primary inline-flex items-center gap-1">
-                                  {item.title} <ExternalLink className="h-3 w-3" />
+                                  {stripMarkdown(item.title)} <ExternalLink className="h-3 w-3" />
                                 </a>
-                              ) : item.title}
+                              ) : stripMarkdown(item.title)}
                             </h4>
                             {isItemImproved && (
                               <Badge variant="secondary" className="text-[9px] bg-green-50 text-green-700 border-green-200">
@@ -101,7 +102,7 @@ const ResumeSections = ({ sections, showImproved = true, onImproveItem, improvin
                           </div>
                         )}
                         {item.subtitle && (
-                          <p className="text-sm text-muted-foreground">{item.subtitle}</p>
+                          <p className="text-sm text-muted-foreground">{stripMarkdown(item.subtitle)}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -147,7 +148,7 @@ const ResumeSections = ({ sections, showImproved = true, onImproveItem, improvin
                     </div>
 
                     {item.description && (
-                      <p className="text-sm text-muted-foreground mt-2">{item.description}</p>
+                      <p className="text-sm text-muted-foreground mt-2">{stripMarkdown(item.description)}</p>
                     )}
 
                     {item.level && (
@@ -159,7 +160,7 @@ const ResumeSections = ({ sections, showImproved = true, onImproveItem, improvin
                         {item.details.map((detail, dIdx) => (
                           <li key={dIdx} className="text-sm text-muted-foreground flex gap-2">
                             <span className="text-primary mt-1.5 shrink-0">•</span>
-                            <span>{detail}</span>
+                            <span>{stripMarkdown(detail)}</span>
                           </li>
                         ))}
                       </ul>
