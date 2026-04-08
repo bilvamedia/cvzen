@@ -58,7 +58,16 @@ serve(async (req) => {
           temperature: 0.7,
         }),
       });
-      const aiData = await aiRes.json();
+      const aiRawText = await aiRes.text();
+      let aiData;
+      try {
+        aiData = JSON.parse(aiRawText);
+      } catch {
+        console.error("AI response not JSON:", aiRawText.substring(0, 500));
+        return new Response(JSON.stringify({ error: "AI returned invalid response" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const text = aiData.choices?.[0]?.message?.content?.trim() || "";
       if (!text) {
         return new Response(JSON.stringify({ error: "AI did not return text" }), {
