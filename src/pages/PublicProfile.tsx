@@ -110,12 +110,22 @@ const PublicProfile = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check shortlist status when profile + user are ready
+  // Check shortlist status and fetch contact info when profile + recruiter ready
   useEffect(() => {
     if (profile && currentUser && isRecruiter) {
       checkShortlistStatus();
+      fetchContactInfo();
     }
   }, [profile, currentUser, isRecruiter]);
+
+  const fetchContactInfo = async () => {
+    if (!profile) return;
+    const { data } = await supabase.rpc("get_profile_contact_for_recruiter", {
+      _profile_id: profile.id,
+    });
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) setContactInfo(row);
+  };
 
   const checkShortlistStatus = async () => {
     if (!profile || !currentUser) return;
