@@ -322,7 +322,7 @@ const ATSScore = () => {
                     </button>
 
                     {isExpanded && (
-                      <div className="px-5 pb-5 border-t border-border pt-4 space-y-4">
+                      <div className="px-4 pb-4 sm:px-5 sm:pb-5 border-t border-border pt-4 space-y-4">
                         {/* Feedback */}
                         <div>
                           <p className="text-sm text-muted-foreground">{section.feedback}</p>
