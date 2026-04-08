@@ -5,7 +5,7 @@ import {
   ChevronRight, Check, BarChart3, Search, Globe, Lock, TrendingUp,
   Award, Target, Layers
 } from "lucide-react";
-import logoMain from "@/assets/logo-main.svg";
+import logoHeader from "@/assets/logo-header.svg";
 import { useEffect, useRef, useState } from "react";
 
 /* ── Intersection Observer hook for scroll-triggered animations ── */
