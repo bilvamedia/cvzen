@@ -208,7 +208,7 @@ You must call the score_sections tool with your analysis.`;
       section_title: s.section_title,
       score: Math.min(100, Math.max(0, s.score)),
       feedback: s.feedback,
-      suggestions: s.suggestions || [],
+      suggestions: s.item_feedback || [],
       keywords_found: s.keywords_found || [],
       keywords_missing: s.keywords_missing || [],
     }));
