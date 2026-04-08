@@ -256,10 +256,12 @@ export type Database = {
       resume_sections: {
         Row: {
           content: Json
+          content_embedding: string | null
           created_at: string
           display_order: number
           id: string
           improved_content: Json | null
+          improved_content_embedding: string | null
           resume_id: string
           section_title: string
           section_type: string
@@ -268,10 +270,12 @@ export type Database = {
         }
         Insert: {
           content?: Json
+          content_embedding?: string | null
           created_at?: string
           display_order?: number
           id?: string
           improved_content?: Json | null
+          improved_content_embedding?: string | null
           resume_id: string
           section_title: string
           section_type: string
@@ -280,10 +284,12 @@ export type Database = {
         }
         Update: {
           content?: Json
+          content_embedding?: string | null
           created_at?: string
           display_order?: number
           id?: string
           improved_content?: Json | null
+          improved_content_embedding?: string | null
           resume_id?: string
           section_title?: string
           section_type?: string
