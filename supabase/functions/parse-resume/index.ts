@@ -75,7 +75,12 @@ serve(async (req) => {
 
     // Extract text from file (convert to base64 for AI)
     const arrayBuffer = await fileData.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    const bytes = new Uint8Array(arrayBuffer);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64 = btoa(binary);
 
     // Update status to parsing
     await supabase.from("resumes").update({ status: "parsing" }).eq("id", resumeId);
