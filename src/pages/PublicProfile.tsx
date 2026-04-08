@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp, Bookmark, BookmarkCheck, X, LogIn } from "lucide-react";
+import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp, Bookmark, BookmarkCheck, X, LogIn, Mail, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -480,6 +480,27 @@ const PublicProfile = () => {
                   </a>
                 )}
               </div>
+
+              {/* Contact info - visible only to logged-in recruiters */}
+              {contactInfo && isRecruiter && (
+                <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-white/70">
+                  {contactInfo.email && (
+                    <a href={`mailto:${contactInfo.email}`} className="flex items-center gap-1 hover:text-white transition-colors">
+                      <Mail className="w-3.5 h-3.5" />{contactInfo.email}
+                    </a>
+                  )}
+                  {contactInfo.phone && (
+                    <a href={`tel:${contactInfo.phone}`} className="flex items-center gap-1 hover:text-white transition-colors">
+                      <Phone className="w-3.5 h-3.5" />{contactInfo.phone}
+                    </a>
+                  )}
+                  {contactInfo.address && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />{contactInfo.address}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Action buttons row */}
               <div className="flex flex-wrap items-center gap-2 mt-6">
