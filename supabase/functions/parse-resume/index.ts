@@ -1,10 +1,30 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import JSZip from "https://esm.sh/jszip@3.10.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+// Extract text from DOCX (ZIP of XML files)
+async function extractTextFromDocx(arrayBuffer: ArrayBuffer): Promise<string> {
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const docXml = await zip.file("word/document.xml")?.async("string");
+  if (!docXml) throw new Error("Invalid DOCX: no word/document.xml found");
+  // Strip XML tags to get plain text, preserve paragraph breaks
+  return docXml
+    .replace(/<w:p[^>]*>/g, "\n")
+    .replace(/<w:tab\/>/g, "\t")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -22,15 +42,12 @@ serve(async (req) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
     if (!supabaseUrl || !supabaseKey || !anonKey) {
-      console.error("Missing env vars:", { hasUrl: !!supabaseUrl, hasKey: !!supabaseKey, hasAnon: !!anonKey });
       return new Response(JSON.stringify({ error: "Server configuration error" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Get user from token
     const anonClient = createClient(supabaseUrl, anonKey);
     const { data: { user }, error: userError } = await anonClient.auth.getUser(
       authHeader.replace("Bearer ", "")
@@ -48,56 +65,62 @@ serve(async (req) => {
       });
     }
 
-    // Fetch resume record
     const { data: resume, error: resumeError } = await supabase
-      .from("resumes")
-      .select("*")
-      .eq("id", resumeId)
-      .eq("user_id", user.id)
-      .single();
-
+      .from("resumes").select("*").eq("id", resumeId).eq("user_id", user.id).single();
     if (resumeError || !resume) {
       return new Response(JSON.stringify({ error: "Resume not found" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Download file from storage
     const { data: fileData, error: downloadError } = await supabase.storage
-      .from("resumes")
-      .download(resume.file_path);
-
+      .from("resumes").download(resume.file_path);
     if (downloadError || !fileData) {
       return new Response(JSON.stringify({ error: "Failed to download resume file" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Extract text from file (convert to base64 for AI)
-    const arrayBuffer = await fileData.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
-    let binary = "";
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    const base64 = btoa(binary);
-
-    // Update status to parsing
     await supabase.from("resumes").update({ status: "parsing" }).eq("id", resumeId);
 
-    // Call Lovable AI to parse resume
+    // Extract text based on file type
+    const arrayBuffer = await fileData.arrayBuffer();
+    const fileName = (resume.file_name || "").toLowerCase();
+    let resumeText = "";
+
+    if (fileName.endsWith(".docx")) {
+      resumeText = await extractTextFromDocx(arrayBuffer);
+    } else {
+      // For PDF or other formats, send as base64 to multimodal model
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      resumeText = `[BASE64_PDF]${btoa(binary)}`;
+    }
+
+    console.log("Extracted text length:", resumeText.length);
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are an expert resume parser. You will receive the base64-encoded content of a resume file. Extract ALL sections from the resume into structured data.
-
-IMPORTANT RULES:
-- Do NOT use hardcoded section names. Discover sections dynamically from the resume content.
-- Common sections include things like Summary, Experience, Education, Skills, Projects, Certifications, Awards, Languages, Volunteer Work, Publications, Interests, References — but the resume may have ANY section names.
-- Extract every section you find, preserving the original section title exactly as written.
-- For each section, provide structured content as JSON.
-
+    const systemPrompt = `You are an expert resume parser. Extract ALL sections from the resume into structured data.
+IMPORTANT: Discover sections dynamically from the resume content. Do NOT use hardcoded section names.
+Extract every section you find, preserving the original section title exactly as written.
 You must call the extract_resume_sections tool with the parsed data.`;
+
+    // Build user message content
+    let userContent: any;
+    if (resumeText.startsWith("[BASE64_PDF]")) {
+      const b64 = resumeText.slice(12);
+      userContent = [
+        { type: "text", text: "Parse this resume PDF. Extract ALL sections dynamically." },
+        { type: "image_url", image_url: { url: `data:application/pdf;base64,${b64}` } },
+      ];
+    } else {
+      userContent = `Parse this resume text. Extract ALL sections dynamically.\n\n---\n${resumeText}\n---`;
+    }
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -109,10 +132,7 @@ You must call the extract_resume_sections tool with the parsed data.`;
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: `Parse this resume (base64 encoded PDF/DOCX). Extract ALL sections dynamically. The file is base64 encoded:\n\n${base64}`,
-          },
+          { role: "user", content: userContent },
         ],
         tools: [
           {
@@ -132,37 +152,22 @@ You must call the extract_resume_sections tool with the parsed data.`;
                     items: {
                       type: "object",
                       properties: {
-                        section_type: {
-                          type: "string",
-                          description: "A lowercase snake_case identifier for this section type, e.g. work_experience, education, skills, projects, certifications, summary, volunteer_work, publications, awards, languages, interests, references, or any other type found"
-                        },
-                        section_title: {
-                          type: "string",
-                          description: "The exact section title as it appears in the resume"
-                        },
+                        section_type: { type: "string", description: "lowercase snake_case identifier" },
+                        section_title: { type: "string", description: "Exact section title from resume" },
                         items: {
                           type: "array",
-                          description: "Array of items in this section. Each item is a flexible object with relevant fields.",
                           items: {
                             type: "object",
                             properties: {
-                              title: { type: "string", description: "Primary title (job title, degree, project name, skill category, etc.)" },
-                              subtitle: { type: "string", description: "Secondary info (company, institution, etc.)" },
-                              date_range: { type: "string", description: "Date range if applicable" },
-                              location: { type: "string", description: "Location if applicable" },
-                              description: { type: "string", description: "Main description or summary text" },
-                              details: {
-                                type: "array",
-                                items: { type: "string" },
-                                description: "Bullet points or detail items"
-                              },
-                              tags: {
-                                type: "array",
-                                items: { type: "string" },
-                                description: "Tags, skills, or keywords associated with this item"
-                              },
-                              url: { type: "string", description: "URL if applicable" },
-                              level: { type: "string", description: "Proficiency level if applicable" }
+                              title: { type: "string" },
+                              subtitle: { type: "string" },
+                              date_range: { type: "string" },
+                              location: { type: "string" },
+                              description: { type: "string" },
+                              details: { type: "array", items: { type: "string" } },
+                              tags: { type: "array", items: { type: "string" } },
+                              url: { type: "string" },
+                              level: { type: "string" }
                             },
                             additionalProperties: true
                           }
@@ -184,41 +189,63 @@ You must call the extract_resume_sections tool with the parsed data.`;
     if (!aiResponse.ok) {
       const errText = await aiResponse.text();
       console.error("AI gateway error:", aiResponse.status, errText);
-      
+      await supabase.from("resumes").update({ status: "error" }).eq("id", resumeId);
+
       if (aiResponse.status === 429) {
-        await supabase.from("resumes").update({ status: "error" }).eq("id", resumeId);
         return new Response(JSON.stringify({ error: "Rate limited. Please try again later." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (aiResponse.status === 402) {
-        await supabase.from("resumes").update({ status: "error" }).eq("id", resumeId);
         return new Response(JSON.stringify({ error: "AI credits exhausted. Please add funds." }), {
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-
-      await supabase.from("resumes").update({ status: "error" }).eq("id", resumeId);
       return new Response(JSON.stringify({ error: "AI parsing failed" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const aiData = await aiResponse.json();
+    console.log("AI response choices:", JSON.stringify(aiData.choices?.[0]?.message).substring(0, 500));
+
+    // Try tool_calls first, then fall back to parsing content
+    let parsed: any;
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) {
+    if (toolCall?.function?.arguments) {
+      parsed = JSON.parse(toolCall.function.arguments);
+    } else {
+      // Fallback: try to extract JSON from message content
+      const content = aiData.choices?.[0]?.message?.content || "";
+      console.log("No tool_calls, trying content fallback. Content:", content.substring(0, 500));
+      const jsonMatch = content.match(/\{[\s\S]*"sections"[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          parsed = JSON.parse(jsonMatch[0]);
+        } catch (e) {
+          // Try repairing
+          let repaired = jsonMatch[0]
+            .replace(/,\s*}/g, "}").replace(/,\s*]/g, "]")
+            .replace(/[\x00-\x1F\x7F]/g, "");
+          let braces = 0, brackets = 0;
+          for (const c of repaired) { if (c === '{') braces++; if (c === '}') braces--; if (c === '[') brackets++; if (c === ']') brackets--; }
+          while (brackets > 0) { repaired += ']'; brackets--; }
+          while (braces > 0) { repaired += '}'; braces--; }
+          parsed = JSON.parse(repaired);
+        }
+      }
+    }
+
+    if (!parsed?.sections) {
       await supabase.from("resumes").update({ status: "error" }).eq("id", resumeId);
       return new Response(JSON.stringify({ error: "AI did not return structured data" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const parsed = JSON.parse(toolCall.function.arguments);
-
-    // Delete old sections for this resume
+    // Delete old sections
     await supabase.from("resume_sections").delete().eq("resume_id", resumeId);
 
-    // Insert all parsed sections dynamically
     const sectionsToInsert = parsed.sections.map((section: any, index: number) => ({
       resume_id: resumeId,
       user_id: user.id,
@@ -229,10 +256,7 @@ You must call the extract_resume_sections tool with the parsed data.`;
     }));
 
     if (sectionsToInsert.length > 0) {
-      const { error: insertError } = await supabase
-        .from("resume_sections")
-        .insert(sectionsToInsert);
-
+      const { error: insertError } = await supabase.from("resume_sections").insert(sectionsToInsert);
       if (insertError) {
         console.error("Insert error:", insertError);
         await supabase.from("resumes").update({ status: "error" }).eq("id", resumeId);
@@ -242,18 +266,12 @@ You must call the extract_resume_sections tool with the parsed data.`;
       }
     }
 
-    // Update resume status and profile
-    await supabase.from("resumes").update({
-      status: "parsed",
-      parsed_at: new Date().toISOString(),
-    }).eq("id", resumeId);
+    await supabase.from("resumes").update({ status: "parsed", parsed_at: new Date().toISOString() }).eq("id", resumeId);
 
-    // Update profile with extracted info
     const profileUpdate: Record<string, string> = {};
     if (parsed.candidate_name) profileUpdate.full_name = parsed.candidate_name;
     if (parsed.candidate_email) profileUpdate.email = parsed.candidate_email;
     if (parsed.candidate_headline) profileUpdate.headline = parsed.candidate_headline;
-
     if (Object.keys(profileUpdate).length > 0) {
       await supabase.from("profiles").update(profileUpdate).eq("id", user.id);
     }
@@ -262,13 +280,7 @@ You must call the extract_resume_sections tool with the parsed data.`;
       success: true,
       sections_count: sectionsToInsert.length,
       candidate_name: parsed.candidate_name,
-      sections: parsed.sections.map((s: any) => ({
-        type: s.section_type,
-        title: s.section_title,
-      })),
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     console.error("parse-resume error:", error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
