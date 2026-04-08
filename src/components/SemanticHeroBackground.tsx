@@ -1,40 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const FLOATING_QUERIES = [
-  // Recruiter searches
-  "developer with microservices 5+ years",
-  "senior data engineer spark kafka",
-  "product manager B2B SaaS experience",
-  "DevOps engineer kubernetes AWS",
-  "UX designer fintech mobile apps",
-  "machine learning engineer NLP",
-  "full-stack developer React Node.js",
-  "sales director enterprise SaaS",
-  "cloud architect multi-tenant systems",
-  "QA lead automation selenium",
-  "cybersecurity analyst SOC compliance",
-  "marketing manager growth hacking",
-  "supply chain analyst SAP",
-  "civil engineer project management",
-  "registered nurse ICU 3+ years",
-  "financial controller IFRS reporting",
-  "mechanical engineer CAD SolidWorks",
-  // Candidate searches
-  "looking for senior frontend developer roles",
-  "product owner jobs remote friendly",
-  "data scientist openings healthcare",
-  "Java backend developer positions Berlin",
-  "entry level graphic designer jobs",
-  "VP of engineering startup series B",
-  "remote project manager agile certified",
-  "iOS developer Swift 4+ years",
-  "HR business partner tech industry",
-  "solutions architect AWS certified",
-  "content strategist B2B marketing",
-  "electrical engineer renewable energy",
-  "teacher STEM curriculum development",
-  "pharma regulatory affairs manager",
-  "logistics coordinator warehouse ops",
+  "developer microservices 5+ yrs",
+  "data engineer spark kafka",
+  "product manager B2B SaaS",
+  "DevOps kubernetes AWS",
+  "UX designer fintech",
+  "ML engineer NLP",
+  "full-stack React Node",
+  "cloud architect Azure",
+  "frontend developer roles",
+  "product owner remote",
+  "data scientist healthcare",
+  "backend Java fintech",
+  "project manager agile",
+  "iOS Swift SwiftUI",
 ];
 
 const CURSOR_QUERIES = [
@@ -60,7 +40,7 @@ interface FloatingTag {
   x: number;
   y: number;
   speed: number;
-  opacity: number;
+  baseOpacity: number;
   size: number;
   delay: number;
 }
@@ -73,56 +53,46 @@ interface CursorTag {
   life: number;
 }
 
-// Check if a point is inside the center text zone (percentage-based)
-const isInTextZone = (x: number, y: number): boolean => {
-  // Center block: 10%-90% horizontal, 10%-80% vertical
-  return x > 10 && x < 90 && y > 10 && y < 82;
-};
-
-// Push a point outside the text zone
-const pushOutOfZone = (x: number, y: number): { x: number; y: number } => {
-  if (!isInTextZone(x, y)) return { x, y };
-  // Push to nearest edge
-  const distLeft = x - 15;
-  const distRight = 85 - x;
-  const distTop = y - 12;
-  const distBottom = 78 - y;
-  const min = Math.min(distLeft, distRight, distTop, distBottom);
-  if (min === distLeft) return { x: Math.random() * 13, y };
-  if (min === distRight) return { x: 87 + Math.random() * 12, y };
-  if (min === distTop) return { x, y: Math.random() * 10 };
-  return { x, y: 80 + Math.random() * 18 };
+// Distribute tags across edges and corners — avoid center text
+const placeOnEdge = (index: number, total: number): { x: number; y: number } => {
+  // Split into 4 edge zones: top, bottom, left, right
+  const zone = index % 4;
+  const rand = () => Math.random();
+  switch (zone) {
+    case 0: return { x: 5 + rand() * 90, y: 2 + rand() * 8 };       // top strip
+    case 1: return { x: 5 + rand() * 90, y: 82 + rand() * 16 };      // bottom strip
+    case 2: return { x: 1 + rand() * 8, y: 15 + rand() * 60 };       // left strip
+    case 3: return { x: 91 + rand() * 8, y: 15 + rand() * 60 };      // right strip
+    default: return { x: rand() * 100, y: rand() * 100 };
+  }
 };
 
 export const SemanticHeroBackground = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [floatingTags, setFloatingTags] = useState<FloatingTag[]>([]);
   const [cursorTags, setCursorTags] = useState<CursorTag[]>([]);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const lastSpawn = useRef(0);
   const cursorId = useRef(0);
   const animFrame = useRef<number>();
 
-  // Initialize floating tags — place them outside the text zone
   useEffect(() => {
     const tags: FloatingTag[] = FLOATING_QUERIES.map((text, i) => {
-      let x = Math.random() * 100;
-      let y = Math.random() * 100;
-      const pushed = pushOutOfZone(x, y);
+      const pos = placeOnEdge(i, FLOATING_QUERIES.length);
       return {
         id: i,
         text,
-        x: pushed.x,
-        y: pushed.y,
-        speed: 0.15 + Math.random() * 0.25,
-        opacity: 0.08 + Math.random() * 0.1,
-        size: 11 + Math.random() * 3,
-        delay: Math.random() * 20,
+        x: pos.x,
+        y: pos.y,
+        speed: 0.08 + Math.random() * 0.12,
+        baseOpacity: 0.04 + Math.random() * 0.04, // very faint by default
+        size: 10 + Math.random() * 2,
+        delay: Math.random() * 30,
       };
     });
     setFloatingTags(tags);
   }, []);
 
-  // Animate floating tags
   useEffect(() => {
     let start: number | null = null;
     const animate = (ts: number) => {
@@ -132,14 +102,8 @@ export const SemanticHeroBackground = () => {
       setFloatingTags((prev) =>
         prev.map((tag) => {
           const t = elapsed + tag.delay;
-          let newX = ((tag.x + Math.sin(t * tag.speed * 0.5) * 0.03 + 100) % 100);
-          let newY = ((tag.y - tag.speed * 0.02 + 100) % 100);
-          // If drifted into text zone, push back out
-          if (isInTextZone(newX, newY)) {
-            const pushed = pushOutOfZone(newX, newY);
-            newX = pushed.x;
-            newY = pushed.y;
-          }
+          const newX = ((tag.x + Math.sin(t * tag.speed * 0.3) * 0.015 + 100) % 100);
+          const newY = ((tag.y - tag.speed * 0.008 + 100) % 100);
           return { ...tag, x: newX, y: newY };
         })
       );
@@ -160,60 +124,83 @@ export const SemanticHeroBackground = () => {
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      const now = Date.now();
-      if (now - lastSpawn.current < 320) return;
-      lastSpawn.current = now;
-
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
 
       const x = ((e.clientX - rect.left) / rect.width) * 100;
       const y = ((e.clientY - rect.top) / rect.height) * 100;
+      setMousePos({ x, y });
 
-      // Don't spawn cursor tags inside the text zone
-      if (isInTextZone(x, y)) return;
+      const now = Date.now();
+      if (now - lastSpawn.current < 400) return;
+      lastSpawn.current = now;
+
+      // Only spawn cursor tags outside center text zone
+      const inCenter = x > 15 && x < 85 && y > 12 && y < 78;
+      if (inCenter) return;
 
       const text = CURSOR_QUERIES[cursorId.current % CURSOR_QUERIES.length];
       cursorId.current++;
 
-      const offsetX = (Math.random() - 0.5) * 10;
-      const offsetY = (Math.random() - 0.5) * 6;
+      const offsetX = (Math.random() - 0.5) * 8;
+      const offsetY = (Math.random() - 0.5) * 5;
 
       setCursorTags((prev) => [
-        ...prev.slice(-10),
-        { id: cursorId.current, text, x: x + offsetX, y: y + offsetY, life: 2.2 },
+        ...prev.slice(-8),
+        { id: cursorId.current, text, x: x + offsetX, y: y + offsetY, life: 2.5 },
       ]);
     },
     []
   );
+
+  const handleMouseLeave = useCallback(() => {
+    setMousePos(null);
+  }, []);
+
+  // Calculate proximity-based opacity boost for floating tags
+  const getTagOpacity = (tag: FloatingTag): number => {
+    if (!mousePos) return tag.baseOpacity;
+    const dx = tag.x - mousePos.x;
+    const dy = tag.y - mousePos.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    // Within ~25% radius, boost opacity up to 0.35
+    const proximity = Math.max(0, 1 - dist / 25);
+    return tag.baseOpacity + proximity * 0.3;
+  };
 
   return (
     <div
       ref={containerRef}
       className="absolute inset-0 overflow-hidden pointer-events-auto"
       onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       aria-hidden="true"
     >
-      {/* Floating background queries */}
-      {floatingTags.map((tag) => (
-        <span
-          key={tag.id}
-          className="absolute whitespace-nowrap font-mono select-none will-change-transform"
-          style={{
-            left: `${tag.x}%`,
-            top: `${tag.y}%`,
-            fontSize: `${tag.size}px`,
-            opacity: tag.opacity,
-            color: "hsl(240 55% 13%)",
-            transform: "translate(-50%, -50%)",
-            letterSpacing: "0.02em",
-          }}
-        >
-          {tag.text}
-        </span>
-      ))}
+      {/* Floating background queries — very faint, brighten near cursor */}
+      {floatingTags.map((tag) => {
+        const opacity = getTagOpacity(tag);
+        const isNearMouse = opacity > tag.baseOpacity + 0.05;
+        return (
+          <span
+            key={tag.id}
+            className="absolute whitespace-nowrap font-mono select-none"
+            style={{
+              left: `${tag.x}%`,
+              top: `${tag.y}%`,
+              fontSize: `${tag.size}px`,
+              opacity,
+              color: isNearMouse ? "hsl(203 80% 48%)" : "hsl(240 20% 70%)",
+              transform: "translate(-50%, -50%)",
+              letterSpacing: "0.02em",
+              transition: "opacity 0.5s ease, color 0.5s ease",
+            }}
+          >
+            {tag.text}
+          </span>
+        );
+      })}
 
-      {/* Cursor-following queries */}
+      {/* Cursor-following queries — sky blue, vivid */}
       {cursorTags.map((tag) => (
         <span
           key={tag.id}
@@ -224,9 +211,9 @@ export const SemanticHeroBackground = () => {
             fontSize: "13px",
             opacity: Math.min(tag.life, 1) * 0.85,
             color: "hsl(203 80% 48%)",
-            transform: `translate(-50%, -50%) scale(${0.8 + Math.min(tag.life, 1) * 0.2})`,
+            transform: `translate(-50%, -50%) scale(${0.85 + Math.min(tag.life, 1) * 0.15})`,
             transition: "opacity 0.3s ease-out, transform 0.3s ease-out",
-            textShadow: "0 0 12px hsl(203 80% 48% / 0.3)",
+            textShadow: "0 0 10px hsl(203 80% 48% / 0.25)",
             letterSpacing: "0.03em",
           }}
         >
