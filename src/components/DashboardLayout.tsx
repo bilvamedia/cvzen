@@ -1,8 +1,9 @@
 import { ReactNode, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, LogOut, Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import logoSvg from "@/assets/logo.svg";
 
 interface NavItem {
   label: string;
@@ -33,10 +34,7 @@ const DashboardLayout = ({ children, navItems, role }: DashboardLayoutProps) => 
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between h-16 px-6 border-b border-sidebar-border">
             <Link to="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
-                <Search className="h-4 w-4 text-sidebar-primary-foreground" />
-              </div>
-              <span className="font-bold text-sidebar-primary-foreground">TalentLens</span>
+              <img src={logoSvg} alt="cvZen" className="h-7 brightness-0 invert" />
             </Link>
             <button className="lg:hidden text-sidebar-foreground" onClick={() => setSidebarOpen(false)}>
               <X className="h-5 w-5" />

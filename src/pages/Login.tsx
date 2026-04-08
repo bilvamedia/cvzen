@@ -3,9 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import logoSvg from "@/assets/logo.svg";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -21,7 +22,6 @@ const Login = () => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      // After login, check role and redirect
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
@@ -43,15 +43,12 @@ const Login = () => {
         </div>
         <div className="relative z-10 px-12 max-w-md">
           <div className="flex items-center gap-2 mb-8">
-            <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-              <Search className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold" style={{ color: 'hsl(0 0% 98%)' }}>TalentLens</span>
+            <img src={logoSvg} alt="cvZen" className="h-10" />
           </div>
           <h2 className="text-3xl font-bold mb-4" style={{ color: 'hsl(0 0% 98%)' }}>
             Welcome back
           </h2>
-          <p style={{ color: 'hsl(210 15% 75%)' }}>
+          <p style={{ color: 'hsl(216 20% 75%)' }}>
             Sign in to access your dashboard, manage your profile, and discover opportunities with semantic intelligence.
           </p>
         </div>
@@ -60,10 +57,7 @@ const Login = () => {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <Search className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-bold text-foreground">TalentLens</span>
+            <img src={logoSvg} alt="cvZen" className="h-8" />
           </div>
 
           <h1 className="text-2xl font-bold text-foreground mb-1">Sign in</h1>

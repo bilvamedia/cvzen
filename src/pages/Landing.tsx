@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, FileText, Users, Sparkles, ArrowRight, Shield, Zap, Brain } from "lucide-react";
+import { FileText, Users, Sparkles, ArrowRight, Shield, Zap, Brain } from "lucide-react";
+import logoSvg from "@/assets/logo.svg";
 
 const Landing = () => {
   return (
@@ -9,10 +10,7 @@ const Landing = () => {
       <nav className="fixed top-0 w-full z-50 glass-card">
         <div className="container mx-auto flex items-center justify-between h-16 px-6">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <Search className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-bold text-foreground">TalentLens</span>
+            <img src={logoSvg} alt="cvZen" className="h-8" />
           </div>
           <div className="flex items-center gap-3">
             <Link to="/login">
@@ -35,14 +33,14 @@ const Landing = () => {
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 mb-8">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">AI-Powered Semantic Recruitment</span>
+              <span className="text-xs font-medium text-primary">Intelligent Hiring OS</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6" style={{ color: 'hsl(0 0% 98%)' }}>
               Find talent by
               <span className="text-gradient"> meaning</span>,
               <br />not just keywords
             </h1>
-            <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto" style={{ color: 'hsl(210 15% 75%)' }}>
+            <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto" style={{ color: 'hsl(216 20% 75%)' }}>
               Upload resumes, parse with AI, create digital profiles, and search semantically.
               Connect the right candidates with the right roles — intelligently.
             </p>
@@ -112,12 +110,9 @@ const Landing = () => {
       {/* Footer */}
       <footer className="py-8 border-t border-border">
         <div className="container mx-auto px-6 flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">© 2026 TalentLens. All rights reserved.</span>
+          <span className="text-sm text-muted-foreground">© 2026 cvZen. All rights reserved.</span>
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded bg-primary/10 flex items-center justify-center">
-              <Search className="h-3 w-3 text-primary" />
-            </div>
-            <span className="text-sm font-medium text-foreground">TalentLens</span>
+            <img src={logoSvg} alt="cvZen" className="h-5" />
           </div>
         </div>
       </footer>
