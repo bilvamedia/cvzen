@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LogOut, Menu, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import logoSvg from "@/assets/logo.svg";
+import logoFull from "@/assets/logo-full.jpg";
 
 interface NavItem {
   label: string;
@@ -34,7 +34,7 @@ const DashboardLayout = ({ children, navItems, role }: DashboardLayoutProps) => 
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between h-16 px-6 border-b border-sidebar-border">
             <Link to="/" className="flex items-center gap-2">
-              <img src={logoSvg} alt="cvZen" className="h-7" />
+              <img src={logoFull} alt="cvZen — Intelligent Hiring OS" className="h-9 rounded" />
             </Link>
             <button className="lg:hidden text-sidebar-foreground" onClick={() => setSidebarOpen(false)}>
               <X className="h-5 w-5" />
