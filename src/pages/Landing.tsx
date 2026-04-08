@@ -111,6 +111,7 @@ const Landing = () => {
 
       {/* ──────────── HERO ──────────── */}
       <section ref={hero.ref} className="pt-28 pb-24 md:pt-36 md:pb-32 relative overflow-hidden bg-white">
+        <SemanticHeroBackground />
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             {/* Status badge */}
