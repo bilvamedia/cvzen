@@ -9,6 +9,7 @@ import Signup from "./pages/Signup";
 import CandidateDashboard from "./pages/candidate/CandidateDashboard";
 import ResumeUpload from "./pages/candidate/ResumeUpload";
 import CandidateProfile from "./pages/candidate/CandidateProfile";
+import ATSScore from "./pages/candidate/ATSScore";
 import JobSearch from "./pages/candidate/JobSearch";
 import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
 import PostJob from "./pages/recruiter/PostJob";
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/candidate" element={<CandidateDashboard />} />
           <Route path="/candidate/resume" element={<ResumeUpload />} />
           <Route path="/candidate/profile" element={<CandidateProfile />} />
+          <Route path="/candidate/ats-score" element={<ATSScore />} />
           <Route path="/candidate/search" element={<JobSearch />} />
           <Route path="/recruiter" element={<RecruiterDashboard />} />
           <Route path="/recruiter/post-job" element={<PostJob />} />
