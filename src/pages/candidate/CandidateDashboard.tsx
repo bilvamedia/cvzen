@@ -18,32 +18,26 @@ const CandidateDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Fetch profile completeness
+    const fetchStats = async (userId: string) => {
       const { data: profile } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", user.id)
+        .eq("id", userId)
         .maybeSingle();
 
       const profileFields = ["full_name", "email", "phone", "headline", "bio", "address", "linkedin_url", "website_url", "avatar_url"];
       const filledFields = profile ? profileFields.filter((f) => profile[f as keyof typeof profile]) : [];
       const completeness = Math.round((filledFields.length / profileFields.length) * 100);
 
-      // Fetch resume sections count
       const { count: sectionCount } = await supabase
         .from("resume_sections")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
+        .eq("user_id", userId);
 
-      // Fetch latest ATS score
       const { data: latestScore } = await supabase
         .from("ats_score_history")
         .select("overall_score")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -55,7 +49,24 @@ const CandidateDashboard = () => {
       });
       setLoading(false);
     };
-    fetchStats();
+
+    // Wait for auth session to be ready before querying
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchStats(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setLoading(true);
+        fetchStats(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const statCards = [
