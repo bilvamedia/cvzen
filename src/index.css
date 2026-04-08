@@ -127,4 +127,36 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px hsl(240 69% 13% / 0.12);
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(hsl(203 80% 48% / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(203 80% 48% / 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .enterprise-border {
+    border: 1px solid hsl(208 30% 87%);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .enterprise-border:hover {
+    border-color: hsl(203 80% 48% / 0.3);
+    box-shadow: 0 0 0 3px hsl(203 80% 48% / 0.06);
+  }
+  /* Focus visible for WCAG */
+  .focus-ring:focus-visible {
+    outline: 2px solid hsl(203 80% 48%);
+    outline-offset: 2px;
+  }
+  .stagger-1 { animation-delay: 0.1s; }
+  .stagger-2 { animation-delay: 0.2s; }
+  .stagger-3 { animation-delay: 0.3s; }
+  .stagger-4 { animation-delay: 0.4s; }
+  .stagger-5 { animation-delay: 0.5s; }
+  .stagger-6 { animation-delay: 0.6s; }
 }
