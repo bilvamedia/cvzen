@@ -2,6 +2,8 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { LayoutDashboard, FileText, User, Search, Share2, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
@@ -12,6 +14,56 @@ const navItems = [
 ];
 
 const CandidateDashboard = () => {
+  const [stats, setStats] = useState({ completeness: 0, sections: 0, atsScore: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch profile completeness
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const profileFields = ["full_name", "email", "phone", "headline", "bio", "address", "linkedin_url", "website_url", "avatar_url"];
+      const filledFields = profile ? profileFields.filter((f) => profile[f as keyof typeof profile]) : [];
+      const completeness = Math.round((filledFields.length / profileFields.length) * 100);
+
+      // Fetch resume sections count
+      const { count: sectionCount } = await supabase
+        .from("resume_sections")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      // Fetch latest ATS score
+      const { data: latestScore } = await supabase
+        .from("ats_score_history")
+        .select("overall_score")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      setStats({
+        completeness,
+        sections: sectionCount || 0,
+        atsScore: latestScore?.overall_score || 0,
+      });
+      setLoading(false);
+    };
+    fetchStats();
+  }, []);
+
+  const statCards = [
+    { label: "Profile Completeness", value: `${stats.completeness}%`, color: "text-primary" },
+    { label: "Resume Sections", value: String(stats.sections), color: "text-accent" },
+    { label: "ATS Score", value: stats.atsScore ? `${stats.atsScore}/100` : "N/A", color: "text-foreground" },
+  ];
+
   return (
     <DashboardLayout navItems={navItems} role="candidate">
       <div className="max-w-4xl">
@@ -19,14 +71,12 @@ const CandidateDashboard = () => {
         <p className="text-muted-foreground mb-8">Here's your overview.</p>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {[
-            { label: "Profile Completeness", value: "0%", color: "text-primary" },
-            { label: "Resume Sections", value: "0", color: "text-accent" },
-            { label: "Profile Views", value: "0", color: "text-foreground" },
-          ].map((s, i) => (
+          {statCards.map((s, i) => (
             <div key={i} className="bg-card rounded-xl p-5 shadow-card border border-border">
               <p className="text-sm text-muted-foreground mb-1">{s.label}</p>
-              <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
+              <p className={`text-3xl font-bold ${s.color}`}>
+                {loading ? "…" : s.value}
+              </p>
             </div>
           ))}
         </div>
