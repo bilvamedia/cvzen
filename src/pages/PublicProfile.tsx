@@ -1,17 +1,32 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp } from "lucide-react";
+import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp, Bookmark, BookmarkCheck, X, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { stripMarkdown } from "@/lib/stripMarkdown";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 interface PublicProfileData {
   id: string;
@@ -35,6 +50,7 @@ const getVisitorHash = async (): Promise<string> => {
 
 const PublicProfile = () => {
   const { slug } = useParams<{ slug: string }>();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<PublicProfileData | null>(null);
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +58,175 @@ const PublicProfile = () => {
   const [likeCount, setLikeCount] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
   const [liking, setLiking] = useState(false);
+
+  // Auth & shortlist state
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isRecruiter, setIsRecruiter] = useState(false);
+  const [isShortlisted, setIsShortlisted] = useState(false);
+  const [shortlisting, setShortlisting] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authTab, setAuthTab] = useState<string>("signin");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authName, setAuthName] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+
+  // Check auth state on mount
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const user = session?.user ?? null;
+      setCurrentUser(user);
+      if (user) {
+        // Check if recruiter
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "recruiter")
+          .maybeSingle();
+        setIsRecruiter(!!roleData);
+        setShowAuthModal(false);
+      } else {
+        setIsRecruiter(false);
+      }
+    });
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const user = session?.user ?? null;
+      setCurrentUser(user);
+      if (user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "recruiter")
+          .maybeSingle();
+        setIsRecruiter(!!roleData);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Check shortlist status when profile + user are ready
+  useEffect(() => {
+    if (profile && currentUser && isRecruiter) {
+      checkShortlistStatus();
+    }
+  }, [profile, currentUser, isRecruiter]);
+
+  const checkShortlistStatus = async () => {
+    if (!profile || !currentUser) return;
+    const { data } = await supabase
+      .from("shortlisted_candidates")
+      .select("id")
+      .eq("recruiter_id", currentUser.id)
+      .eq("candidate_profile_id", profile.id)
+      .maybeSingle();
+    setIsShortlisted(!!data);
+  };
+
+  const handleShortlist = async () => {
+    if (!profile) return;
+
+    // If not logged in, show auth modal
+    if (!currentUser) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    // If logged in but not recruiter
+    if (!isRecruiter) {
+      toast({
+        title: "Recruiter access only",
+        description: "Only recruiters can shortlist candidates. Please sign up as a recruiter.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setShortlisting(true);
+    try {
+      if (isShortlisted) {
+        await supabase
+          .from("shortlisted_candidates")
+          .delete()
+          .eq("recruiter_id", currentUser.id)
+          .eq("candidate_profile_id", profile.id);
+        setIsShortlisted(false);
+        toast({ title: "Removed from shortlist" });
+      } else {
+        const { error } = await supabase
+          .from("shortlisted_candidates")
+          .insert({
+            recruiter_id: currentUser.id,
+            candidate_profile_id: profile.id,
+          });
+        if (!error) {
+          setIsShortlisted(true);
+          toast({ title: "Candidate shortlisted!" });
+        }
+      }
+    } catch {
+      toast({ title: "Something went wrong", variant: "destructive" });
+    } finally {
+      setShortlisting(false);
+    }
+  };
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+
+    try {
+      if (authTab === "signin") {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: authEmail,
+          password: authPassword,
+        });
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+          options: {
+            data: { full_name: authName },
+            emailRedirectTo: window.location.href,
+          },
+        });
+        if (error) throw error;
+
+        // Assign recruiter role
+        if (data.user) {
+          await supabase.from("user_roles").insert({
+            user_id: data.user.id,
+            role: "recruiter" as const,
+          });
+          // Create profile
+          await supabase.from("profiles").insert({
+            id: data.user.id,
+            full_name: authName,
+            email: authEmail,
+            role: "recruiter" as const,
+          });
+        }
+
+        toast({
+          title: "Account created!",
+          description: "Please verify your email to complete signup.",
+        });
+        setShowAuthModal(false);
+        setAuthLoading(false);
+        return;
+      }
+    } catch (err: any) {
+      setAuthError(err.message || "Authentication failed");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (slug) loadPublicProfile(slug);
@@ -116,8 +301,6 @@ const PublicProfile = () => {
     const contactParts: string[] = [];
     if (profile?.linkedin_url) contactParts.push(profile.linkedin_url);
     if (profile?.website_url) contactParts.push(profile.website_url);
-    if (profile?.linkedin_url) contactParts.push(profile.linkedin_url);
-    if (profile?.website_url) contactParts.push(profile.website_url);
     if (contactParts.length) text += contactParts.join(" | ") + "\n";
     text += "\n";
     if (profile?.bio) text += `ABOUT\n${profile.bio}\n\n`;
@@ -174,7 +357,6 @@ const PublicProfile = () => {
       if (profile?.full_name) printWindow.document.write(`<h1>${profile.full_name}</h1>`);
       if (profile?.headline) printWindow.document.write(`<div class="headline">${profile.headline}</div>`);
       const contactParts: string[] = [];
-      if (profile?.linkedin_url) contactParts.push(`<a href="${profile.linkedin_url}">LinkedIn</a>`);
       if (profile?.linkedin_url) contactParts.push(`<a href="${profile.linkedin_url}">LinkedIn</a>`);
       if (profile?.website_url) contactParts.push(`<a href="${profile.website_url}">Website</a>`);
       if (contactParts.length) printWindow.document.write(`<div class="contact">${contactParts.join(" &nbsp;|&nbsp; ")}</div>`);
@@ -247,37 +429,15 @@ const PublicProfile = () => {
             <Link to="/" className="inline-flex items-center text-white/70 hover:text-white text-sm transition-colors">
               <ArrowLeft className="w-4 h-4 mr-1" /> Back to CVZen
             </Link>
-            <div className="flex items-center gap-2">
-              {/* Like / Upvote button */}
-              <button
-                onClick={handleLike}
-                disabled={hasLiked || liking}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                  hasLiked
-                    ? "bg-white/20 text-white cursor-default"
-                    : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 hover:border-white/30"
-                }`}
-              >
-                <ThumbsUp className={`h-4 w-4 transition-transform duration-300 ${hasLiked ? "fill-current scale-110" : ""}`} />
-                <span>{likeCount}</span>
-              </button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 border border-white/20">
-                    <Download className="h-4 w-4 mr-1.5" /> Download CV
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => downloadCV("pdf")}>
-                    <FileText className="h-4 w-4 mr-2" /> Download as PDF
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => downloadCV("docx")}>
-                    <FileText className="h-4 w-4 mr-2" /> Download as Word
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+
+            {/* Recruiter logged-in indicator */}
+            {currentUser && isRecruiter && (
+              <span className="text-xs text-white/60 hidden sm:inline">
+                Signed in as <span className="text-white/90 font-medium">{currentUser.email}</span>
+              </span>
+            )}
           </div>
+
           <div className="flex flex-col md:flex-row items-start gap-6">
             {profile.avatar_url ? (
               <img
@@ -308,6 +468,60 @@ const PublicProfile = () => {
                     <Globe className="w-4 h-4" />Website
                   </a>
                 )}
+              </div>
+
+              {/* Action buttons row */}
+              <div className="flex flex-wrap items-center gap-2 mt-6">
+                {/* Like button */}
+                <button
+                  onClick={handleLike}
+                  disabled={hasLiked || liking}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                    hasLiked
+                      ? "bg-white/20 text-white cursor-default"
+                      : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 hover:border-white/30"
+                  }`}
+                >
+                  <ThumbsUp className={`h-4 w-4 transition-transform duration-300 ${hasLiked ? "fill-current scale-110" : ""}`} />
+                  <span>{likeCount}</span>
+                </button>
+
+                {/* Shortlist button */}
+                <button
+                  onClick={handleShortlist}
+                  disabled={shortlisting}
+                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                    isShortlisted
+                      ? "bg-green-500/20 text-green-100 border border-green-400/30"
+                      : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 hover:border-white/30"
+                  }`}
+                >
+                  {shortlisting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isShortlisted ? (
+                    <BookmarkCheck className="h-4 w-4 fill-current" />
+                  ) : (
+                    <Bookmark className="h-4 w-4" />
+                  )}
+                  <span>{isShortlisted ? "Shortlisted" : "Shortlist"}</span>
+                </button>
+
+                {/* Download CV */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 hover:border-white/30 transition-all duration-300">
+                      <Download className="h-4 w-4" /> Download CV
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => downloadCV("pdf")}>
+                      <FileText className="h-4 w-4 mr-2" /> Download as PDF
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => downloadCV("docx")}>
+                      <FileText className="h-4 w-4 mr-2" /> Download as Word
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </div>
@@ -411,6 +625,106 @@ const PublicProfile = () => {
           Powered by <Link to="/" className="text-primary hover:underline font-medium">CVZen.ai</Link>
         </div>
       </div>
+
+      {/* Auth Modal */}
+      <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <LogIn className="w-5 h-5 text-primary" />
+              Recruiter Sign In
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Sign in or create a recruiter account to shortlist this candidate.
+          </p>
+          <Tabs value={authTab} onValueChange={setAuthTab} className="mt-2">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="signin">
+              <form onSubmit={handleAuthSubmit} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">Email</Label>
+                  <Input
+                    id="signin-email"
+                    type="email"
+                    required
+                    value={authEmail}
+                    onChange={e => setAuthEmail(e.target.value)}
+                    placeholder="you@company.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password">Password</Label>
+                  <Input
+                    id="signin-password"
+                    type="password"
+                    required
+                    value={authPassword}
+                    onChange={e => setAuthPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
+                </div>
+                {authError && <p className="text-sm text-destructive">{authError}</p>}
+                <Button type="submit" className="w-full" disabled={authLoading}>
+                  {authLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Sign In
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signup">
+              <form onSubmit={handleAuthSubmit} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Full Name</Label>
+                  <Input
+                    id="signup-name"
+                    type="text"
+                    required
+                    value={authName}
+                    onChange={e => setAuthName(e.target.value)}
+                    placeholder="Jane Smith"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Work Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    required
+                    value={authEmail}
+                    onChange={e => setAuthEmail(e.target.value)}
+                    placeholder="you@company.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Password</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    required
+                    minLength={6}
+                    value={authPassword}
+                    onChange={e => setAuthPassword(e.target.value)}
+                    placeholder="Min 6 characters"
+                  />
+                </div>
+                {authError && <p className="text-sm text-destructive">{authError}</p>}
+                <Button type="submit" className="w-full" disabled={authLoading}>
+                  {authLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Create Recruiter Account
+                </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  By signing up you agree to our <Link to="/terms" className="underline">Terms</Link> & <Link to="/privacy" className="underline">Privacy Policy</Link>.
+                </p>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
