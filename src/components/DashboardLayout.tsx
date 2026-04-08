@@ -86,13 +86,20 @@ const DashboardLayout = ({ children, navItems, role }: DashboardLayoutProps) => 
 
       {/* Main */}
       <div className="flex-1 lg:ml-64">
-        <header className="sticky top-0 z-30 h-16 bg-background/80 backdrop-blur-md border-b border-border flex items-center px-6">
-          <button className="lg:hidden mr-4 text-foreground" onClick={() => setSidebarOpen(true)}>
+        <header className="sticky top-0 z-30 h-16 border-b border-border flex items-center px-4 sm:px-6 lg:bg-background/80 lg:backdrop-blur-md"
+          style={{ background: 'hsl(240 55% 16%)' }}
+        >
+          <button className="lg:hidden mr-3 text-white/80 hover:text-white" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
             <Menu className="h-5 w-5" />
           </button>
-          <div className="flex-1" />
+          <div className="lg:hidden flex-1 flex items-center">
+            <Link to="/">
+              <img src={logoHeader} alt="cvZen" className="h-7 w-auto" />
+            </Link>
+          </div>
+          <div className="hidden lg:block flex-1" />
         </header>
-        <main className="p-6">{children}</main>
+        <main className="p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );
