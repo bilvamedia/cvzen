@@ -109,12 +109,7 @@ const Landing = () => {
       </nav>
 
       {/* ──────────── HERO ──────────── */}
-      <section ref={hero.ref} className="pt-28 pb-24 md:pt-36 md:pb-32 relative overflow-hidden">
-        {/* Background image */}
-        <img src={heroBg} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1080} />
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-black/30" aria-hidden="true" />
-
+      <section ref={hero.ref} className="pt-28 pb-24 md:pt-36 md:pb-32 relative overflow-hidden bg-white">
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             {/* Status badge */}
@@ -128,7 +123,7 @@ const Landing = () => {
 
             <h1
               className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-[1.08] opacity-0 ${hero.inView ? 'animate-fade-in stagger-1' : ''}`}
-              style={{ color: 'hsl(0 0% 98%)' }}
+              style={{ color: 'hsl(240 55% 13%)' }}
             >
               Find talent by{" "}
               <span className="text-gradient">meaning</span>,
@@ -138,7 +133,7 @@ const Landing = () => {
 
             <p
               className={`text-base sm:text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed opacity-0 ${hero.inView ? 'animate-fade-in stagger-2' : ''}`}
-              style={{ color: 'hsl(208 30% 75%)' }}
+              style={{ color: 'hsl(240 10% 40%)' }}
             >
               Upload resumes, parse with AI, create digital profiles, and search semantically.
               Connect the right candidates with the right roles — intelligently.
@@ -152,7 +147,9 @@ const Landing = () => {
                 </Button>
               </Link>
               <Link to="/signup?role=recruiter">
-                <Button size="lg" className="w-full sm:w-auto bg-transparent border-2 border-primary/40 text-white hover:bg-primary/10 hover:border-primary/60 h-12 px-8 font-semibold text-base transition-all duration-300 focus-ring group">
+                <Button size="lg" className="w-full sm:w-auto border-2 border-primary/40 hover:bg-primary/10 hover:border-primary/60 h-12 px-8 font-semibold text-base transition-all duration-300 focus-ring group"
+                  style={{ color: 'hsl(240 55% 13%)' }}
+                >
                   I'm a Recruiter
                   <ChevronRight className="h-4 w-4 ml-1 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </Button>
