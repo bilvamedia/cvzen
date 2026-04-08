@@ -272,6 +272,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_resume_sections: {
+        Args: { _profile_id: string }
+        Returns: {
+          content: Json
+          display_order: number
+          id: string
+          improved_content: Json
+          section_title: string
+          section_type: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
