@@ -140,7 +140,7 @@ const Disclaimer = () => {
             <h2 className="text-xl font-semibold text-foreground mb-3">13. Contact</h2>
             <div className="bg-muted rounded-lg p-4 text-sm">
               <p><strong>cvZen Legal</strong></p>
-              <p>Email: legal@cvzen.io</p>
+              <p>Email: legal@cvzen.ai</p>
               <p>For questions about this disclaimer, please contact us before using the Platform.</p>
             </div>
           </section>

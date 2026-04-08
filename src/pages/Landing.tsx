@@ -375,6 +375,7 @@ const Landing = () => {
               { label: "Privacy", href: "/privacy" },
               { label: "Terms", href: "/terms" },
               { label: "Disclaimer", href: "/disclaimer" },
+              { label: "Brand", href: "/brand" },
             ].map((link) => (
               <Link
                 key={link.label}

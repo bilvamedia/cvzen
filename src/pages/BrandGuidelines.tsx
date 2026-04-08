@@ -188,7 +188,7 @@ const BrandGuidelines = () => {
               <Download className="h-8 w-8 text-primary" />
               <h3 className="font-semibold">Permitted Use</h3>
               <p className="text-sm text-muted-foreground">
-                Partners, media, and integrators may use cvZen brand assets solely for accurate, factual references (e.g., press articles, integration pages). Prior written approval is required for all commercial use. Assets must not be modified and must link back to cvzen.com.
+                Partners, media, and integrators may use cvZen brand assets solely for accurate, factual references (e.g., press articles, integration pages). Prior written approval is required for all commercial use. Assets must not be modified and must link back to cvzen.ai.
               </p>
             </div>
 
@@ -225,7 +225,7 @@ const BrandGuidelines = () => {
               </div>
               <div className="space-y-2">
                 <h3 className="font-semibold text-foreground">5. Reporting Misuse</h3>
-                <p>If you discover unauthorized use of cvZen brand assets, please report it to <span className="text-primary font-medium">legal@cvzen.com</span>. We take brand protection seriously and will pursue appropriate legal remedies.</p>
+                <p>If you discover unauthorized use of cvZen brand assets, please report it to <span className="text-primary font-medium">legal@cvzen.ai</span>. We take brand protection seriously and will pursue appropriate legal remedies.</p>
               </div>
             </div>
           </div>
@@ -244,7 +244,7 @@ const BrandGuidelines = () => {
           <h2 className="text-xl font-bold">Need Brand Assets?</h2>
           <p className="text-muted-foreground text-sm">
             For press kits, high-resolution logos, or brand partnership inquiries, contact us at{" "}
-            <a href="mailto:brand@cvzen.com" className="text-primary hover:underline">brand@cvzen.com</a>
+            <a href="mailto:brand@cvzen.ai" className="text-primary hover:underline">brand@cvzen.ai</a>
           </p>
         </section>
       </main>
