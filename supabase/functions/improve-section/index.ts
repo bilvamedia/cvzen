@@ -299,6 +299,17 @@ Return the improved version preserving the same JSON structure.`;
       });
     }
 
+    // Generate embedding for improved content (fire-and-forget)
+    fetch(`${supabaseUrl}/functions/v1/generate-embeddings`, {
+      method: "POST",
+      headers: {
+        Authorization: authHeader,
+        "Content-Type": "application/json",
+        apikey: anonKey,
+      },
+      body: JSON.stringify({ sectionIds: [sectionId], column: "improved_content" }),
+    }).catch(err => console.error("Embedding generation trigger failed:", err));
+
     return new Response(JSON.stringify({
       success: true,
       improved_content: { items: finalItems },

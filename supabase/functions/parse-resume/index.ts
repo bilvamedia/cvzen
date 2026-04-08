@@ -259,8 +259,10 @@ You must call the extract_resume_sections tool with the parsed data.`;
       display_order: index,
     }));
 
+    let insertedSectionIds: string[] = [];
     if (sectionsToInsert.length > 0) {
-      const { error: insertError } = await supabase.from("resume_sections").insert(sectionsToInsert);
+      const { data: insertedData, error: insertError } = await supabase
+        .from("resume_sections").insert(sectionsToInsert).select("id");
       if (insertError) {
         console.error("Insert error:", insertError);
         await supabase.from("resumes").update({ status: "error" }).eq("id", resumeId);
@@ -268,6 +270,7 @@ You must call the extract_resume_sections tool with the parsed data.`;
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      insertedSectionIds = (insertedData || []).map((r: any) => r.id);
     }
 
     await supabase.from("resumes").update({ status: "parsed", parsed_at: new Date().toISOString() }).eq("id", resumeId);
@@ -282,6 +285,19 @@ You must call the extract_resume_sections tool with the parsed data.`;
     if (parsed.candidate_address) profileUpdate.address = parsed.candidate_address;
     if (Object.keys(profileUpdate).length > 0) {
       await supabase.from("profiles").update(profileUpdate).eq("id", user.id);
+    }
+
+    // Generate embeddings for parsed content (fire-and-forget)
+    if (insertedSectionIds.length > 0) {
+      fetch(`${supabaseUrl}/functions/v1/generate-embeddings`, {
+        method: "POST",
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+          apikey: anonKey,
+        },
+        body: JSON.stringify({ sectionIds: insertedSectionIds, column: "content" }),
+      }).catch(err => console.error("Embedding generation trigger failed:", err));
     }
 
     return new Response(JSON.stringify({
