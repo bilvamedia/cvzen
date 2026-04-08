@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, User, Search, Target, Loader2, TrendingUp, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { LayoutDashboard, FileText, User, Search, Target, Loader2, TrendingUp, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -17,6 +17,7 @@ const navItems = [
 
 interface SectionScore {
   id: string;
+  section_id: string;
   section_type: string;
   section_title: string;
   score: number;
@@ -62,6 +63,8 @@ const ATSScore = () => {
   const [scoring, setScoring] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [resumeId, setResumeId] = useState<string | null>(null);
+  const [improvingSection, setImprovingSection] = useState<string | null>(null);
+  const [improvedSections, setImprovedSections] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadData();
@@ -87,8 +90,8 @@ const ATSScore = () => {
     }
     setResumeId(resume.id);
 
-    // Load scores and history in parallel
-    const [scoresRes, historyRes] = await Promise.all([
+    // Load scores, history, and improved sections in parallel
+    const [scoresRes, historyRes, sectionsRes] = await Promise.all([
       supabase
         .from("ats_section_scores")
         .select("*")
@@ -100,11 +103,40 @@ const ATSScore = () => {
         .eq("resume_id", resume.id)
         .order("created_at", { ascending: false })
         .limit(10),
+      supabase
+        .from("resume_sections")
+        .select("id, improved_content")
+        .eq("resume_id", resume.id),
     ]);
 
     if (scoresRes.data) setSectionScores(scoresRes.data as any);
     if (historyRes.data) setHistory(historyRes.data as any);
+    if (sectionsRes.data) {
+      const improved = new Set<string>();
+      sectionsRes.data.forEach((s: any) => {
+        if (s.improved_content) improved.add(s.id);
+      });
+      setImprovedSections(improved);
+    }
     setLoading(false);
+  };
+
+  const improveSection = async (sectionId: string) => {
+    setImprovingSection(sectionId);
+    try {
+      const { data, error } = await supabase.functions.invoke("improve-section", {
+        body: { sectionId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setImprovedSections(prev => new Set(prev).add(sectionId));
+      toast({ title: "Section improved!", description: "The improved version is now shown on your digital profile." });
+    } catch (err: any) {
+      toast({ title: "Improvement failed", description: err.message, variant: "destructive" });
+    } finally {
+      setImprovingSection(null);
+    }
   };
 
   const runScoring = async () => {
@@ -316,6 +348,50 @@ const ATSScore = () => {
                                 ))}
                               </div>
                             </div>
+                          )}
+                        </div>
+
+                        {/* Improve Button */}
+                        <div className="pt-2 border-t border-border">
+                          {improvedSections.has(section.section_id) ? (
+                            <div className="flex items-center gap-2 text-sm text-green-600">
+                              <CheckCircle2 className="h-4 w-4" />
+                              <span className="font-medium">Improved — showing on your digital profile</span>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="ml-auto"
+                                onClick={() => improveSection(section.section_id)}
+                                disabled={improvingSection === section.section_id}
+                              >
+                                {improvingSection === section.section_id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                ) : (
+                                  <RefreshCw className="h-3 w-3 mr-1" />
+                                )}
+                                Re-improve
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              variant="hero"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => improveSection(section.section_id)}
+                              disabled={improvingSection === section.section_id}
+                            >
+                              {improvingSection === section.section_id ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  Improving with AI...
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="h-4 w-4 mr-2" />
+                                  Improve This Section with AI
+                                </>
+                              )}
+                            </Button>
                           )}
                         </div>
                       </div>
