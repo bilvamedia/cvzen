@@ -269,27 +269,28 @@ const ATSScore = () => {
 
             {/* Score Improvement History */}
             {history.length > 1 && (
-              <div className="bg-card rounded-xl shadow-card border border-border p-5 mb-6">
+              <div className="bg-card rounded-xl shadow-card border border-border p-4 sm:p-5 mb-6">
                 <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-primary" /> Score History
                 </h3>
-                <div className="flex items-end gap-2 h-24">
-                  {[...history].reverse().map((h, i) => {
-                    const maxH = Math.max(...history.map(x => x.overall_score), 1);
-                    const heightPct = (h.overall_score / 100) * 100;
-                    return (
-                      <div key={h.id} className="flex-1 flex flex-col items-center gap-1">
-                        <span className={`text-xs font-medium ${getScoreColor(h.overall_score)}`}>{h.overall_score}</span>
-                        <div
-                          className={`w-full rounded-t ${getScoreBg(h.overall_score)} transition-all`}
-                          style={{ height: `${heightPct}%`, minHeight: 4 }}
-                        />
-                        <span className="text-[9px] text-muted-foreground">
-                          {new Date(h.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                        </span>
-                      </div>
-                    );
-                  })}
+                <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                  <div className="flex items-end gap-2 h-24" style={{ minWidth: `${Math.max(history.length * 56, 200)}px` }}>
+                    {[...history].reverse().map((h) => {
+                      const heightPct = (h.overall_score / 100) * 100;
+                      return (
+                        <div key={h.id} className="flex-1 flex flex-col items-center gap-1 min-w-[44px]">
+                          <span className={`text-xs font-medium ${getScoreColor(h.overall_score)}`}>{h.overall_score}</span>
+                          <div
+                            className={`w-full max-w-[40px] rounded-t ${getScoreBg(h.overall_score)} transition-all`}
+                            style={{ height: `${heightPct}%`, minHeight: 4 }}
+                          />
+                          <span className="text-[9px] text-muted-foreground whitespace-nowrap">
+                            {new Date(h.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             )}
