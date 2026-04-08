@@ -56,6 +56,7 @@ const CandidateProfile = () => {
   const [newSectionType, setNewSectionType] = useState("");
   const [newSectionItems, setNewSectionItems] = useState<any[]>([{ title: "", description: "", details: [] }]);
   const [addingSectionLoading, setAddingSectionLoading] = useState(false);
+  const [improvingBio, setImprovingBio] = useState(false);
 
   useEffect(() => {
     loadProfile();
