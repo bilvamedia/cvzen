@@ -10,7 +10,7 @@ const Landing = () => {
       <nav className="fixed top-0 w-full z-50 bg-background/90 backdrop-blur-md border-b border-border">
         <div className="container mx-auto flex items-center justify-between h-16 px-6">
           <div className="flex items-center gap-2">
-            <img src={logoMain} alt="cvZen — Intelligent Hiring OS" className="h-8 w-auto" />
+            <img src={logoMain} alt="cvZen — Intelligent Hiring OS" className="h-10 w-auto" />
           </div>
           <div className="flex items-center gap-3">
             <Link to="/login">
