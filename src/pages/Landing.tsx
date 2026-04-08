@@ -70,17 +70,33 @@ const Landing = () => {
   const stats = useInView();
   const cta = useInView();
 
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background" role="main">
       {/* ──────────── NAV ──────────── */}
-      <nav className="fixed top-0 w-full z-50 bg-accent/95 backdrop-blur-md border-b border-accent/80" role="navigation" aria-label="Main navigation">
+      <nav
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+          scrolled
+            ? "bg-accent/95 backdrop-blur-md border-b border-white/5 shadow-lg"
+            : "bg-transparent border-b border-white/[0.06]"
+        }`}
+        role="navigation"
+        aria-label="Main navigation"
+      >
         <div className="container mx-auto flex items-center justify-between h-16 px-6">
           <Link to="/" className="flex items-center gap-2 focus-ring rounded-md" aria-label="cvZen Home">
             <img src={logoMain} alt="cvZen — Intelligent Hiring OS" className="h-10 w-auto" />
           </Link>
           <div className="flex items-center gap-2">
             <Link to="/login">
-              <Button variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 focus-ring transition-colors duration-200">
+              <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10 focus-ring transition-colors duration-200">
                 Sign in
               </Button>
             </Link>
