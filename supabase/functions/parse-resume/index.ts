@@ -145,7 +145,11 @@ You must call the extract_resume_sections tool with the parsed data.`;
                 properties: {
                   candidate_name: { type: "string", description: "Full name of the candidate" },
                   candidate_email: { type: "string", description: "Email if found" },
+                  candidate_phone: { type: "string", description: "Phone number if found" },
                   candidate_headline: { type: "string", description: "Professional headline or title" },
+                  candidate_linkedin: { type: "string", description: "LinkedIn URL if found" },
+                  candidate_website: { type: "string", description: "Personal website or portfolio URL if found" },
+                  candidate_address: { type: "string", description: "Location or address if found" },
                   sections: {
                     type: "array",
                     description: "All sections found in the resume, in order",
