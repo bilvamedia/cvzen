@@ -3,9 +3,10 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Eye, EyeOff, User, Briefcase, Check } from "lucide-react";
+import { Eye, EyeOff, User, Briefcase, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import logoSvg from "@/assets/logo.svg";
 
 type Role = "candidate" | "recruiter";
 
@@ -31,11 +32,9 @@ const Signup = () => {
       });
       if (error) throw error;
       if (data.user) {
-        // Insert role
         await supabase.from("user_roles").insert({ user_id: data.user.id, role });
-        // Insert profile
         await supabase.from("profiles").insert({ id: data.user.id, full_name: fullName, email, role });
-        toast({ title: "Account created!", description: "Welcome to TalentLens." });
+        toast({ title: "Account created!", description: "Welcome to cvZen." });
         navigate(role === "recruiter" ? "/recruiter" : "/candidate");
       }
     } catch (error: any) {
@@ -53,16 +52,13 @@ const Signup = () => {
         </div>
         <div className="relative z-10 px-12 max-w-md">
           <div className="flex items-center gap-2 mb-8">
-            <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-              <Search className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold" style={{ color: 'hsl(0 0% 98%)' }}>TalentLens</span>
+            <img src={logoSvg} alt="cvZen" className="h-10" />
           </div>
           <h2 className="text-3xl font-bold mb-4" style={{ color: 'hsl(0 0% 98%)' }}>
-            Join TalentLens
+            Join cvZen
           </h2>
-          <p style={{ color: 'hsl(210 15% 75%)' }}>
-            Whether you're looking for your next role or your next hire, TalentLens uses AI to make the connection meaningful.
+          <p style={{ color: 'hsl(216 20% 75%)' }}>
+            Whether you're looking for your next role or your next hire, cvZen uses AI to make the connection meaningful.
           </p>
         </div>
       </div>
@@ -70,10 +66,7 @@ const Signup = () => {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <Search className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-bold text-foreground">TalentLens</span>
+            <img src={logoSvg} alt="cvZen" className="h-8" />
           </div>
 
           <h1 className="text-2xl font-bold text-foreground mb-1">Create account</h1>
