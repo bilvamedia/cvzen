@@ -24,7 +24,7 @@ import {
 
 const navItems = [
   { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
-  { label: "My Resume", href: "/candidate/resume", icon: FileText },
+  { label: "My CV", href: "/candidate/resume", icon: FileText },
   { label: "Digital Profile", href: "/candidate/profile", icon: User },
   { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
   { label: "Search Jobs", href: "/candidate/search", icon: Search },
@@ -206,7 +206,7 @@ const CandidateProfile = () => {
         .order("created_at", { ascending: false })
         .limit(1)
         .single();
-      if (!latestResume) throw new Error("No parsed resume found. Upload a resume first.");
+      if (!latestResume) throw new Error("No parsed CV found. Upload a CV first.");
 
       const maxOrder = sections.reduce((max, s) => Math.max(max, s.display_order), 0);
       const cleanItems = newSectionItems.filter(i => i.title?.trim() || i.description?.trim());
@@ -291,7 +291,7 @@ const CandidateProfile = () => {
       const { data, error } = await supabase.functions.invoke("improve-section", {
         body: {
           customPrompt: true,
-          prompt: `You are a professional resume writer. Based on the following resume data, ${currentBio ? "improve this bio" : "write a compelling professional bio"} for ${name || "this candidate"}${headline ? ` who is a ${headline}` : ""}. Keep it concise (2-4 sentences), professional, and highlight key strengths.\n\n${currentBio ? `Current bio: ${currentBio}\n\n` : ""}Resume data:\n${resumeContext}\n\nReturn ONLY the improved bio text, nothing else.`,
+          prompt: `You are a professional CV writer. Based on the following CV data, ${currentBio ? "improve this bio" : "write a compelling professional bio"} for ${name || "this candidate"}${headline ? ` who is a ${headline}` : ""}. Keep it concise (2-4 sentences), professional, and highlight key strengths.\n\n${currentBio ? `Current bio: ${currentBio}\n\n` : ""}Resume data:\n${resumeContext}\n\nReturn ONLY the improved bio text, nothing else.`,
         },
       });
       if (error) throw error;
@@ -420,7 +420,7 @@ const CandidateProfile = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${(profile?.full_name || "Resume").replace(/\s+/g, "_")}_Resume.docx`;
+        a.download = `${(profile?.full_name || "CV").replace(/\s+/g, "_")}_CV.docx`;
         a.click();
         URL.revokeObjectURL(url);
       }
@@ -567,7 +567,7 @@ const CandidateProfile = () => {
         ) : (
           <div className="bg-card rounded-xl p-8 shadow-card border border-border text-center">
             <p className="text-muted-foreground text-sm">
-              No sections yet. Upload and parse your resume to populate your profile.
+              No sections yet. Upload and parse your CV to populate your profile.
             </p>
           </div>
         )}

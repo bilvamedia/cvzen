@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
-  { label: "My Resume", href: "/candidate/resume", icon: FileText },
+  { label: "My CV", href: "/candidate/resume", icon: FileText },
   { label: "Digital Profile", href: "/candidate/profile", icon: User },
   { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
   { label: "Search Jobs", href: "/candidate/search", icon: Search },
@@ -166,7 +166,7 @@ const ATSScore = () => {
 
   const runScoring = async () => {
     if (!resumeId) {
-      toast({ title: "No resume found", description: "Please upload and parse a resume first.", variant: "destructive" });
+      toast({ title: "No CV found", description: "Please upload and parse a CV first.", variant: "destructive" });
       return;
     }
     setScoring(true);
@@ -222,14 +222,14 @@ const ATSScore = () => {
         {!resumeId && (
           <div className="bg-card rounded-xl p-8 shadow-card border border-border text-center">
             <AlertTriangle className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">No parsed resume found. Upload and parse your resume first.</p>
+            <p className="text-muted-foreground">No parsed CV found. Upload and parse your CV first.</p>
           </div>
         )}
 
         {resumeId && sectionScores.length === 0 && !scoring && (
           <div className="bg-card rounded-xl p-8 shadow-card border border-border text-center">
             <Target className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground mb-4">Click "Run ATS Score" to analyze your resume sections.</p>
+            <p className="text-muted-foreground mb-4">Click "Run ATS Score" to analyze your CV sections.</p>
           </div>
         )}
 

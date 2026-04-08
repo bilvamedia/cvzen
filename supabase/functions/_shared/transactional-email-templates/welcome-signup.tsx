@@ -17,7 +17,7 @@ const WelcomeSignupEmail = ({ name, role }: WelcomeSignupProps) => {
   const greeting = name ? `Welcome, ${name}!` : 'Welcome to cvZen!'
   const roleMessage = role === 'recruiter'
     ? 'Start posting jobs and discovering top talent with AI-powered semantic search.'
-    : 'Upload your resume, get AI-powered ATS scoring, and create your digital profile.'
+    : 'Upload your CV, get AI-powered ATS scoring, and create your digital profile.'
 
   return (
     <Html lang="en" dir="ltr">

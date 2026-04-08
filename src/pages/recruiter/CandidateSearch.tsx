@@ -18,7 +18,7 @@ const CandidateSearch = () => {
     <DashboardLayout navItems={navItems} role="recruiter">
       <div className="max-w-3xl">
         <h1 className="text-2xl font-bold text-foreground mb-1">Semantic Candidate Search</h1>
-        <p className="text-muted-foreground mb-8">Describe the ideal candidate — we'll search resumes by meaning.</p>
+        <p className="text-muted-foreground mb-8">Describe the ideal candidate — we'll search CVs by meaning.</p>
 
         <div className="flex gap-3 mb-8">
           <div className="flex-1 relative">
