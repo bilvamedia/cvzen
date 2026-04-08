@@ -124,6 +124,7 @@ export type Database = {
           id: string
           linkedin_url: string | null
           phone: string | null
+          profile_slug: string | null
           role: Database["public"]["Enums"]["app_role"] | null
           social_links: Json | null
           updated_at: string
@@ -140,6 +141,7 @@ export type Database = {
           id: string
           linkedin_url?: string | null
           phone?: string | null
+          profile_slug?: string | null
           role?: Database["public"]["Enums"]["app_role"] | null
           social_links?: Json | null
           updated_at?: string
@@ -156,6 +158,7 @@ export type Database = {
           id?: string
           linkedin_url?: string | null
           phone?: string | null
+          profile_slug?: string | null
           role?: Database["public"]["Enums"]["app_role"] | null
           social_links?: Json | null
           updated_at?: string
@@ -269,6 +272,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_resume_sections: {
+        Args: { _profile_id: string }
+        Returns: {
+          content: Json
+          display_order: number
+          id: string
+          improved_content: Json
+          section_title: string
+          section_type: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

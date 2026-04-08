@@ -309,8 +309,9 @@ const CandidateProfile = () => {
   };
 
   const handleShare = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/profile/${profile?.id}`);
-    toast({ title: "Link copied!", description: "Share this link with recruiters." });
+    const slug = profile?.profile_slug || profile?.id;
+    navigator.clipboard.writeText(`${window.location.origin}/profile/${slug}`);
+    toast({ title: "Link copied!", description: `Share this link with recruiters: /profile/${slug}` });
   };
 
   // === Download ===
