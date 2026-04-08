@@ -529,17 +529,26 @@ const CandidateProfile = () => {
             </div>
 
             {/* Social Links */}
-            <div className="flex items-center gap-4 mt-3">
-              {profile?.linkedin_url && (
-                <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary">
-                  <Linkedin className="h-3.5 w-3.5 text-primary" /> LinkedIn
-                </a>
-              )}
-              {profile?.website_url && (
-                <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary">
-                  <Globe className="h-3.5 w-3.5 text-primary" /> Website
-                </a>
-              )}
+            <div className="flex flex-wrap items-center gap-3 mt-3">
+              {(() => {
+                const links: Array<{platform: string; url: string}> = Array.isArray(profile?.social_links) && profile.social_links.length > 0
+                  ? profile.social_links
+                  : [
+                      ...(profile?.linkedin_url ? [{ platform: "LinkedIn", url: profile.linkedin_url }] : []),
+                      ...(profile?.website_url ? [{ platform: "Website", url: profile.website_url }] : []),
+                    ];
+                return links.map((link: any, i: number) => {
+                  const name = link.platform || "Link";
+                  const IconComp = name.toLowerCase() === "linkedin" ? Linkedin
+                    : name.toLowerCase() === "github" ? Github
+                    : Globe;
+                  return (
+                    <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary">
+                      <IconComp className="h-3.5 w-3.5 text-primary" /> {name}
+                    </a>
+                  );
+                });
+              })()}
               <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={openEditLinks}>
                 <Pencil className="h-3 w-3 mr-1" /> Edit Links
               </Button>
