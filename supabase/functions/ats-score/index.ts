@@ -79,6 +79,8 @@ Scoring criteria per section type (adapt dynamically):
 - For certifications: relevance, recency, issuing authority
 - For any other section: content quality, relevance, completeness
 
+CRITICAL: Each section may contain MULTIPLE items (e.g. multiple jobs in Professional Experience, multiple degrees in Education). You MUST analyze ALL items within each section individually. Your suggestions must reference specific items by name/title (e.g. "In your Freelancer role at XYZ, add quantified achievements..." or "Your Software Engineer position at ABC lacks action verbs..."). Do NOT give generic suggestions — be specific about WHICH item needs WHAT improvement.
+
 Be ACCURATE and CRITICAL. Do not inflate scores. Most sections should score 40-75. Only exceptional content gets 80+.
 
 You must call the score_sections tool with your analysis.`;
