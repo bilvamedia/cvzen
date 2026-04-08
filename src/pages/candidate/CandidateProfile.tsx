@@ -1,7 +1,10 @@
 import { useEffect, useState, useRef } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, User, Search, Share2, Loader2, Target, Mail, Phone, MapPin, Globe, Linkedin, Download } from "lucide-react";
+import { LayoutDashboard, FileText, User, Search, Share2, Loader2, Target, Mail, Phone, MapPin, Globe, Linkedin, Download, Pencil, Camera, Plus, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ResumeSections from "@/components/ResumeSections";
@@ -11,6 +14,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const navItems = [
   { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
@@ -27,6 +37,25 @@ const CandidateProfile = () => {
   const [loading, setLoading] = useState(true);
   const [improvingKey, setImprovingKey] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+
+  // Edit states
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editingLinks, setEditingLinks] = useState(false);
+  const [profileForm, setProfileForm] = useState<any>({});
+  const [linksForm, setLinksForm] = useState<any>({});
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingLinks, setSavingLinks] = useState(false);
+
+  // Avatar
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  // Add section
+  const [addSectionOpen, setAddSectionOpen] = useState(false);
+  const [newSectionTitle, setNewSectionTitle] = useState("");
+  const [newSectionType, setNewSectionType] = useState("");
+  const [newSectionItems, setNewSectionItems] = useState<any[]>([{ title: "", description: "", details: [] }]);
+  const [addingSectionLoading, setAddingSectionLoading] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -59,6 +88,152 @@ const CandidateProfile = () => {
     setLoading(false);
   };
 
+  // === Avatar Upload ===
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/avatar.${ext}`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true });
+      if (uploadErr) throw uploadErr;
+
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+      const avatar_url = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      await supabase.from("profiles").update({ avatar_url }).eq("id", user.id);
+      setProfile((p: any) => ({ ...p, avatar_url }));
+      toast({ title: "Avatar updated!" });
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  // === Edit Personal Info ===
+  const openEditProfile = () => {
+    setProfileForm({
+      full_name: profile?.full_name || "",
+      headline: profile?.headline || "",
+      bio: profile?.bio || "",
+      email: profile?.email || "",
+      phone: profile?.phone || "",
+      address: profile?.address || "",
+    });
+    setEditingProfile(true);
+  };
+
+  const saveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const { error } = await supabase.from("profiles").update(profileForm).eq("id", user.id);
+      if (error) throw error;
+      setProfile((p: any) => ({ ...p, ...profileForm }));
+      setEditingProfile(false);
+      toast({ title: "Profile updated!" });
+    } catch (err: any) {
+      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  // === Edit Social Links ===
+  const openEditLinks = () => {
+    setLinksForm({
+      linkedin_url: profile?.linkedin_url || "",
+      website_url: profile?.website_url || "",
+    });
+    setEditingLinks(true);
+  };
+
+  const saveLinks = async () => {
+    setSavingLinks(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const { error } = await supabase.from("profiles").update(linksForm).eq("id", user.id);
+      if (error) throw error;
+      setProfile((p: any) => ({ ...p, ...linksForm }));
+      setEditingLinks(false);
+      toast({ title: "Links updated!" });
+    } catch (err: any) {
+      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+    } finally {
+      setSavingLinks(false);
+    }
+  };
+
+  // === Add Section ===
+  const handleAddSection = async () => {
+    if (!newSectionTitle.trim()) return;
+    setAddingSectionLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data: latestResume } = await supabase
+        .from("resumes")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("status", "parsed")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      if (!latestResume) throw new Error("No parsed resume found. Upload a resume first.");
+
+      const maxOrder = sections.reduce((max, s) => Math.max(max, s.display_order), 0);
+      const cleanItems = newSectionItems.filter(i => i.title?.trim() || i.description?.trim());
+      if (cleanItems.length === 0) throw new Error("Add at least one item with a title or description.");
+
+      const { data, error } = await supabase.from("resume_sections").insert({
+        resume_id: latestResume.id,
+        user_id: user.id,
+        section_title: newSectionTitle.trim(),
+        section_type: newSectionType.trim() || newSectionTitle.trim().toLowerCase().replace(/\s+/g, "_"),
+        content: { items: cleanItems },
+        display_order: maxOrder + 1,
+      }).select().single();
+      if (error) throw error;
+      setSections(prev => [...prev, data]);
+      setAddSectionOpen(false);
+      setNewSectionTitle("");
+      setNewSectionType("");
+      setNewSectionItems([{ title: "", description: "", details: [] }]);
+      toast({ title: "Section added!" });
+    } catch (err: any) {
+      toast({ title: "Failed to add section", description: err.message, variant: "destructive" });
+    } finally {
+      setAddingSectionLoading(false);
+    }
+  };
+
+  const updateNewItem = (idx: number, field: string, value: string) => {
+    setNewSectionItems(prev => prev.map((item, i) =>
+      i === idx ? { ...item, [field]: value } : item
+    ));
+  };
+
+  const addNewItem = () => {
+    setNewSectionItems(prev => [...prev, { title: "", description: "", details: [] }]);
+  };
+
+  const removeNewItem = (idx: number) => {
+    if (newSectionItems.length <= 1) return;
+    setNewSectionItems(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  // === Improve Item ===
   const handleImproveItem = async (sectionId: string, itemIndex: number) => {
     const key = `${sectionId}-${itemIndex}`;
     setImprovingKey(key);
@@ -69,8 +244,8 @@ const CandidateProfile = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      setSections(prev => prev.map(s => 
-        s.id === sectionId 
+      setSections(prev => prev.map(s =>
+        s.id === sectionId
           ? { ...s, improved_content: data.improved_content }
           : s
       ));
@@ -87,6 +262,7 @@ const CandidateProfile = () => {
     toast({ title: "Link copied!", description: "Share this link with recruiters." });
   };
 
+  // === Download ===
   const buildResumeContent = () => {
     let text = "";
     if (profile?.full_name) text += `${profile.full_name}\n`;
@@ -129,8 +305,6 @@ const CandidateProfile = () => {
     setDownloading(true);
     try {
       const content = buildResumeContent();
-      // For both formats, we generate a clean text file the user can open
-      // PDF generation via browser print
       if (format === "pdf") {
         const printWindow = window.open("", "_blank");
         if (printWindow) {
@@ -153,7 +327,7 @@ const CandidateProfile = () => {
               .tag { background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
               @media print { body { margin: 0; } }
             </style></head><body>`);
-          
+
           if (profile?.full_name) printWindow.document.write(`<h1>${profile.full_name}</h1>`);
           if (profile?.headline) printWindow.document.write(`<div class="headline">${profile.headline}</div>`);
           const contactParts: string[] = [];
@@ -190,7 +364,6 @@ const CandidateProfile = () => {
           setTimeout(() => printWindow.print(), 500);
         }
       } else {
-        // DOCX: generate as formatted plain text download
         const blob = new Blob([content], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -247,24 +420,42 @@ const CandidateProfile = () => {
           </div>
         </div>
 
-        {/* Profile header card with personal info */}
+        {/* Profile header card */}
         <div className="bg-card rounded-xl shadow-card border border-border overflow-hidden mb-6">
           <div className="h-24 hero-gradient" />
           <div className="px-6 pb-6">
-            <div className="h-16 w-16 rounded-full bg-secondary border-4 border-card -mt-8 flex items-center justify-center">
-              <User className="h-8 w-8 text-muted-foreground" />
+            {/* Avatar */}
+            <div className="relative w-fit -mt-8">
+              <div className="h-16 w-16 rounded-full bg-secondary border-4 border-card flex items-center justify-center overflow-hidden">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
+                ) : (
+                  <User className="h-8 w-8 text-muted-foreground" />
+                )}
+              </div>
+              <button
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors"
+              >
+                {uploadingAvatar ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
+              </button>
+              <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
             </div>
-            <h2 className="text-xl font-bold text-foreground mt-3">
-              {profile?.full_name || "Your Name"}
-            </h2>
-            {profile?.headline && (
-              <p className="text-sm text-primary font-medium mt-1">{profile.headline}</p>
-            )}
-            {profile?.bio && (
-              <p className="text-sm text-muted-foreground mt-2">{profile.bio}</p>
-            )}
 
-            {/* Contact / Personal Information */}
+            {/* Name / Headline / Bio */}
+            <div className="flex items-start justify-between mt-3">
+              <div>
+                <h2 className="text-xl font-bold text-foreground">{profile?.full_name || "Your Name"}</h2>
+                {profile?.headline && <p className="text-sm text-primary font-medium mt-1">{profile.headline}</p>}
+                {profile?.bio && <p className="text-sm text-muted-foreground mt-2">{profile.bio}</p>}
+              </div>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0" onClick={openEditProfile}>
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+
+            {/* Contact Info */}
             <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-sm text-muted-foreground">
               {profile?.email && (
                 <span className="flex items-center gap-1.5">
@@ -284,23 +475,28 @@ const CandidateProfile = () => {
                   {profile.address}
                 </span>
               )}
+            </div>
+
+            {/* Social Links */}
+            <div className="flex items-center gap-4 mt-3">
               {profile?.linkedin_url && (
-                <span className="flex items-center gap-1.5">
-                  <Linkedin className="h-3.5 w-3.5 text-primary" />
-                  <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary">LinkedIn</a>
-                </span>
+                <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary">
+                  <Linkedin className="h-3.5 w-3.5 text-primary" /> LinkedIn
+                </a>
               )}
               {profile?.website_url && (
-                <span className="flex items-center gap-1.5">
-                  <Globe className="h-3.5 w-3.5 text-primary" />
-                  <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary">Website</a>
-                </span>
+                <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary">
+                  <Globe className="h-3.5 w-3.5 text-primary" /> Website
+                </a>
               )}
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={openEditLinks}>
+                <Pencil className="h-3 w-3 mr-1" /> Edit Links
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* Dynamic sections with per-item improve */}
+        {/* Sections */}
         {sections.length > 0 ? (
           <ResumeSections
             sections={sections}
@@ -314,7 +510,127 @@ const CandidateProfile = () => {
             </p>
           </div>
         )}
+
+        {/* Add Section Button */}
+        <div className="mt-4">
+          <Button variant="outline" className="w-full border-dashed" onClick={() => setAddSectionOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" /> Add Section
+          </Button>
+        </div>
       </div>
+
+      {/* === Edit Personal Info Dialog === */}
+      <Dialog open={editingProfile} onOpenChange={setEditingProfile}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Personal Information</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Full Name</Label>
+              <Input value={profileForm.full_name || ""} onChange={e => setProfileForm((p: any) => ({ ...p, full_name: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Headline</Label>
+              <Input value={profileForm.headline || ""} onChange={e => setProfileForm((p: any) => ({ ...p, headline: e.target.value }))} placeholder="e.g. Senior Software Engineer" />
+            </div>
+            <div>
+              <Label>Bio</Label>
+              <Textarea value={profileForm.bio || ""} onChange={e => setProfileForm((p: any) => ({ ...p, bio: e.target.value }))} rows={3} />
+            </div>
+            <div>
+              <Label>Email</Label>
+              <Input type="email" value={profileForm.email || ""} onChange={e => setProfileForm((p: any) => ({ ...p, email: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Phone</Label>
+              <Input value={profileForm.phone || ""} onChange={e => setProfileForm((p: any) => ({ ...p, phone: e.target.value }))} placeholder="+1 234 567 8900" />
+            </div>
+            <div>
+              <Label>Address / Location</Label>
+              <Input value={profileForm.address || ""} onChange={e => setProfileForm((p: any) => ({ ...p, address: e.target.value }))} placeholder="City, Country" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingProfile(false)}>Cancel</Button>
+            <Button onClick={saveProfile} disabled={savingProfile}>
+              {savingProfile ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* === Edit Social Links Dialog === */}
+      <Dialog open={editingLinks} onOpenChange={setEditingLinks}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Social Links</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="flex items-center gap-2"><Linkedin className="h-4 w-4" /> LinkedIn URL</Label>
+              <Input value={linksForm.linkedin_url || ""} onChange={e => setLinksForm((p: any) => ({ ...p, linkedin_url: e.target.value }))} placeholder="https://linkedin.com/in/yourname" />
+            </div>
+            <div>
+              <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Website URL</Label>
+              <Input value={linksForm.website_url || ""} onChange={e => setLinksForm((p: any) => ({ ...p, website_url: e.target.value }))} placeholder="https://yoursite.com" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingLinks(false)}>Cancel</Button>
+            <Button onClick={saveLinks} disabled={savingLinks}>
+              {savingLinks ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* === Add Section Dialog === */}
+      <Dialog open={addSectionOpen} onOpenChange={setAddSectionOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Section</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Section Title</Label>
+              <Input value={newSectionTitle} onChange={e => setNewSectionTitle(e.target.value)} placeholder="e.g. Volunteering, Publications, Awards" />
+            </div>
+            <div>
+              <Label>Section Type (optional)</Label>
+              <Input value={newSectionType} onChange={e => setNewSectionType(e.target.value)} placeholder="e.g. volunteer, publications" />
+            </div>
+            <div className="space-y-3">
+              <Label>Items</Label>
+              {newSectionItems.map((item, idx) => (
+                <div key={idx} className="border border-border rounded-lg p-3 space-y-2 relative">
+                  {newSectionItems.length > 1 && (
+                    <button onClick={() => removeNewItem(idx)} className="absolute top-2 right-2 text-muted-foreground hover:text-destructive">
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                  <Input placeholder="Title" value={item.title} onChange={e => updateNewItem(idx, "title", e.target.value)} />
+                  <Input placeholder="Subtitle (optional)" value={item.subtitle || ""} onChange={e => updateNewItem(idx, "subtitle", e.target.value)} />
+                  <Input placeholder="Date range (optional)" value={item.date_range || ""} onChange={e => updateNewItem(idx, "date_range", e.target.value)} />
+                  <Textarea placeholder="Description" value={item.description} onChange={e => updateNewItem(idx, "description", e.target.value)} rows={2} />
+                </div>
+              ))}
+              <Button variant="outline" size="sm" onClick={addNewItem} className="w-full border-dashed">
+                <Plus className="h-3 w-3 mr-1" /> Add Item
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddSectionOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddSection} disabled={addingSectionLoading || !newSectionTitle.trim()}>
+              {addingSectionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Add Section
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
