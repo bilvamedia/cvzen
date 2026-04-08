@@ -275,7 +275,11 @@ You must call the extract_resume_sections tool with the parsed data.`;
     const profileUpdate: Record<string, string> = {};
     if (parsed.candidate_name) profileUpdate.full_name = parsed.candidate_name;
     if (parsed.candidate_email) profileUpdate.email = parsed.candidate_email;
+    if (parsed.candidate_phone) profileUpdate.phone = parsed.candidate_phone;
     if (parsed.candidate_headline) profileUpdate.headline = parsed.candidate_headline;
+    if (parsed.candidate_linkedin) profileUpdate.linkedin_url = parsed.candidate_linkedin;
+    if (parsed.candidate_website) profileUpdate.website_url = parsed.candidate_website;
+    if (parsed.candidate_address) profileUpdate.address = parsed.candidate_address;
     if (Object.keys(profileUpdate).length > 0) {
       await supabase.from("profiles").update(profileUpdate).eq("id", user.id);
     }
