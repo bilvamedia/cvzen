@@ -101,7 +101,7 @@ const PublicProfile = () => {
       loadLikes(profileData.id);
 
       const { data: secs } = await supabase.rpc("get_public_resume_sections", {
-        _profile_id: data.id,
+        _profile_id: profileData.id,
       });
       if (secs && Array.isArray(secs)) setSections(secs);
     } catch {
