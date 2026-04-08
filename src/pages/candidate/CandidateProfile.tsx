@@ -571,8 +571,21 @@ const CandidateProfile = () => {
               <Input value={profileForm.headline || ""} onChange={e => setProfileForm((p: any) => ({ ...p, headline: e.target.value }))} placeholder="e.g. Senior Software Engineer" />
             </div>
             <div>
-              <Label>Bio</Label>
-              <Textarea value={profileForm.bio || ""} onChange={e => setProfileForm((p: any) => ({ ...p, bio: e.target.value }))} rows={3} />
+              <div className="flex items-center justify-between mb-1">
+                <Label>Bio</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs gap-1"
+                  onClick={handleImproveBio}
+                  disabled={improvingBio}
+                >
+                  {improvingBio ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  {profileForm.bio ? "Improve with AI" : "Generate with AI"}
+                </Button>
+              </div>
+              <Textarea value={profileForm.bio || ""} onChange={e => setProfileForm((p: any) => ({ ...p, bio: e.target.value }))} rows={3} placeholder="Write or generate a professional bio..." />
             </div>
             <div>
               <Label>Email</Label>
