@@ -8,6 +8,7 @@ import {
 import logoHeader from "@/assets/logo-header.svg";
 import heroBg from "@/assets/hero-bg.jpg";
 import { useEffect, useRef, useState } from "react";
+import { SemanticHeroBackground } from "@/components/SemanticHeroBackground";
 
 /* ── Intersection Observer hook for scroll-triggered animations ── */
 const useInView = (options?: IntersectionObserverInit) => {
