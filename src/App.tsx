@@ -20,6 +20,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Disclaimer from "./pages/Disclaimer";
 import BrandGuidelines from "./pages/BrandGuidelines";
+import PublicProfile from "./pages/PublicProfile";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/terms" element={<Terms />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/brand" element={<BrandGuidelines />} />
+          <Route path="/profile/:slug" element={<PublicProfile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
