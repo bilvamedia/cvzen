@@ -102,7 +102,7 @@ You must call the score_sections tool with your analysis.`;
             type: "function",
             function: {
               name: "score_sections",
-              description: "Return ATS scores and feedback for each resume section",
+              description: "Return ATS scores and per-item feedback for each resume section",
               parameters: {
                 type: "object",
                 properties: {
@@ -115,16 +115,28 @@ You must call the score_sections tool with your analysis.`;
                         section_type: { type: "string" },
                         section_title: { type: "string" },
                         score: { type: "integer", description: "Score 0-100" },
-                        feedback: { type: "string", description: "Detailed feedback explaining the score" },
-                        suggestions: {
+                        feedback: { type: "string", description: "Overall section-level feedback" },
+                        item_feedback: {
                           type: "array",
-                          items: { type: "string" },
-                          description: "Specific actionable improvements"
+                          description: "Individual feedback for EACH item within the section. One entry per item (job, degree, project, etc.)",
+                          items: {
+                            type: "object",
+                            properties: {
+                              item_title: { type: "string", description: "The title/name of this specific item (job title, degree, project name, skill category)" },
+                              item_subtitle: { type: "string", description: "Subtitle if any (company name, institution, etc.)" },
+                              item_score: { type: "integer", description: "Score 0-100 for this specific item" },
+                              strengths: { type: "array", items: { type: "string" }, description: "What this item does well" },
+                              improvements: { type: "array", items: { type: "string" }, description: "Specific improvements for this item" },
+                              keywords_found: { type: "array", items: { type: "string" } },
+                              keywords_missing: { type: "array", items: { type: "string" } }
+                            },
+                            required: ["item_title", "item_score", "improvements"]
+                          }
                         },
                         keywords_found: {
                           type: "array",
                           items: { type: "string" },
-                          description: "ATS-relevant keywords found in this section"
+                          description: "ATS-relevant keywords found across the whole section"
                         },
                         keywords_missing: {
                           type: "array",
@@ -132,7 +144,7 @@ You must call the score_sections tool with your analysis.`;
                           description: "Important ATS keywords missing from this section"
                         }
                       },
-                      required: ["section_id", "section_type", "section_title", "score", "feedback", "suggestions", "keywords_found", "keywords_missing"]
+                      required: ["section_id", "section_type", "section_title", "score", "feedback", "item_feedback", "keywords_found", "keywords_missing"]
                     }
                   }
                 },
@@ -196,7 +208,7 @@ You must call the score_sections tool with your analysis.`;
       section_title: s.section_title,
       score: Math.min(100, Math.max(0, s.score)),
       feedback: s.feedback,
-      suggestions: s.suggestions || [],
+      suggestions: s.item_feedback || [],
       keywords_found: s.keywords_found || [],
       keywords_missing: s.keywords_missing || [],
     }));
