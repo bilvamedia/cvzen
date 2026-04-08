@@ -42,7 +42,7 @@ const CandidateProfile = () => {
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingLinks, setEditingLinks] = useState(false);
   const [profileForm, setProfileForm] = useState<any>({});
-  const [linksForm, setLinksForm] = useState<any>({});
+  const [linksForm, setLinksForm] = useState<any[]>([]);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingLinks, setSavingLinks] = useState(false);
 
