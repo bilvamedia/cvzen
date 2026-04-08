@@ -91,8 +91,6 @@ const PublicProfile = () => {
 
       const profileData = Array.isArray(data) ? data[0] : data;
       if (error || !profileData) {
-
-      if (error || !profileData) {
         setNotFound(true);
         return;
       }
