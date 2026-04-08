@@ -5,7 +5,7 @@ import {
   ChevronRight, Check, BarChart3, Search, Globe, Lock, TrendingUp,
   Award, Target, Layers
 } from "lucide-react";
-import logoMain from "@/assets/logo-main.svg";
+import logoHeader from "@/assets/logo-header.svg";
 import { useEffect, useRef, useState } from "react";
 
 /* ── Intersection Observer hook for scroll-triggered animations ── */
@@ -89,7 +89,7 @@ const Landing = () => {
       >
         <div className="container mx-auto flex items-center justify-between h-16 px-6">
           <Link to="/" className="flex items-center gap-2 focus-ring rounded-md" aria-label="cvZen Home">
-            <img src={logoMain} alt="cvZen — Intelligent Hiring OS" className="h-10 w-auto" />
+            <img src={logoHeader} alt="cvZen — Intelligent Hiring OS" className="h-10 w-auto" />
           </Link>
           <div className="flex items-center gap-2">
             <Link to="/login">
@@ -367,7 +367,7 @@ const Landing = () => {
       <footer className="py-8 bg-card border-t border-border" role="contentinfo">
         <div className="container mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <img src={logoMain} alt="cvZen" className="h-6 w-auto opacity-60" />
+            <img src={logoHeader} alt="cvZen" className="h-6 w-auto opacity-60" />
             <span className="text-sm text-muted-foreground">© {new Date().getFullYear()} cvZen. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-6">
