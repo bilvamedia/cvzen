@@ -354,7 +354,7 @@ const Landing = () => {
                 </Button>
               </Link>
               <Link to="/login">
-                <Button size="lg" variant="outline" className="border-white/15 text-white/90 hover:bg-white/5 hover:border-white/25 h-12 px-8 font-semibold transition-all duration-300 focus-ring">
+                <Button size="lg" className="bg-transparent border-2 border-white/20 text-white hover:bg-white/5 hover:border-white/30 h-12 px-8 font-semibold transition-all duration-300 focus-ring">
                   Sign in
                 </Button>
               </Link>
