@@ -220,12 +220,12 @@ const CandidateProfile = () => {
   return (
     <DashboardLayout navItems={navItems} role="candidate">
       <div className="max-w-3xl">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-foreground mb-1">Digital Profile</h1>
             <p className="text-muted-foreground">Your AI-generated professional profile.</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" disabled={downloading || sections.length === 0}>
