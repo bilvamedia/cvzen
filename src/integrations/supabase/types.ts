@@ -418,6 +418,20 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_public_profile_by_slug: {
+        Args: { _slug: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          full_name: string
+          headline: string
+          id: string
+          linkedin_url: string
+          profile_slug: string
+          social_links: Json
+          website_url: string
+        }[]
+      }
       get_public_resume_sections: {
         Args: { _profile_id: string }
         Returns: {

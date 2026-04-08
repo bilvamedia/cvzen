@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Globe, Linkedin, ExternalLink, MapPin, Briefcase, ArrowLeft, Download, FileText, Mail, Phone, ThumbsUp } from "lucide-react";
+import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -19,11 +19,8 @@ interface PublicProfileData {
   headline: string | null;
   bio: string | null;
   avatar_url: string | null;
-  address: string | null;
   linkedin_url: string | null;
   website_url: string | null;
-  email: string | null;
-  phone: string | null;
   social_links: any;
   profile_slug: string | null;
 }
@@ -90,21 +87,19 @@ const PublicProfile = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name, headline, bio, avatar_url, address, linkedin_url, website_url, email, phone, social_links, profile_slug")
-        .eq("profile_slug", profileSlug)
-        .single();
+        .rpc("get_public_profile_by_slug", { _slug: profileSlug });
 
-      if (error || !data) {
+      const profileData = Array.isArray(data) ? data[0] : data;
+      if (error || !profileData) {
         setNotFound(true);
         return;
       }
 
-      setProfile(data as PublicProfileData);
-      loadLikes(data.id);
+      setProfile(profileData as PublicProfileData);
+      loadLikes(profileData.id);
 
       const { data: secs } = await supabase.rpc("get_public_resume_sections", {
-        _profile_id: data.id,
+        _profile_id: profileData.id,
       });
       if (secs && Array.isArray(secs)) setSections(secs);
     } catch {
@@ -119,9 +114,8 @@ const PublicProfile = () => {
     if (profile?.full_name) text += `${profile.full_name}\n`;
     if (profile?.headline) text += `${profile.headline}\n`;
     const contactParts: string[] = [];
-    if (profile?.email) contactParts.push(profile.email);
-    if (profile?.phone) contactParts.push(profile.phone);
-    if (profile?.address) contactParts.push(profile.address);
+    if (profile?.linkedin_url) contactParts.push(profile.linkedin_url);
+    if (profile?.website_url) contactParts.push(profile.website_url);
     if (profile?.linkedin_url) contactParts.push(profile.linkedin_url);
     if (profile?.website_url) contactParts.push(profile.website_url);
     if (contactParts.length) text += contactParts.join(" | ") + "\n";
@@ -180,9 +174,7 @@ const PublicProfile = () => {
       if (profile?.full_name) printWindow.document.write(`<h1>${profile.full_name}</h1>`);
       if (profile?.headline) printWindow.document.write(`<div class="headline">${profile.headline}</div>`);
       const contactParts: string[] = [];
-      if (profile?.email) contactParts.push(profile.email);
-      if (profile?.phone) contactParts.push(profile.phone);
-      if (profile?.address) contactParts.push(profile.address);
+      if (profile?.linkedin_url) contactParts.push(`<a href="${profile.linkedin_url}">LinkedIn</a>`);
       if (profile?.linkedin_url) contactParts.push(`<a href="${profile.linkedin_url}">LinkedIn</a>`);
       if (profile?.website_url) contactParts.push(`<a href="${profile.website_url}">Website</a>`);
       if (contactParts.length) printWindow.document.write(`<div class="contact">${contactParts.join(" &nbsp;|&nbsp; ")}</div>`);
@@ -306,19 +298,6 @@ const PublicProfile = () => {
                 <p className="text-lg text-white/80 mt-2">{profile.headline}</p>
               )}
               <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-white/60">
-                {profile.email && (
-                  <a href={`mailto:${profile.email}`} className="flex items-center gap-1 hover:text-white transition-colors">
-                    <Mail className="w-4 h-4" />{profile.email}
-                  </a>
-                )}
-                {profile.phone && (
-                  <a href={`tel:${profile.phone}`} className="flex items-center gap-1 hover:text-white transition-colors">
-                    <Phone className="w-4 h-4" />{profile.phone}
-                  </a>
-                )}
-                {profile.address && (
-                  <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{profile.address}</span>
-                )}
                 {profile.linkedin_url && (
                   <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
                     <Linkedin className="w-4 h-4" />LinkedIn
