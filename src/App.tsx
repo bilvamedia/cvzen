@@ -19,6 +19,7 @@ import NotFound from "./pages/NotFound";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Disclaimer from "./pages/Disclaimer";
+import BrandGuidelines from "./pages/BrandGuidelines";
 
 const queryClient = new QueryClient();
 
