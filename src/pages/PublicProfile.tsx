@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp, Bookmark, BookmarkCheck, X, LogIn } from "lucide-react";
+import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp, Bookmark, BookmarkCheck, X, LogIn, Mail, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -61,6 +61,7 @@ const PublicProfile = () => {
 
   // Auth & shortlist state
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [contactInfo, setContactInfo] = useState<{ email: string | null; phone: string | null; address: string | null } | null>(null);
   const [isRecruiter, setIsRecruiter] = useState(false);
   const [isShortlisted, setIsShortlisted] = useState(false);
   const [shortlisting, setShortlisting] = useState(false);
@@ -109,12 +110,22 @@ const PublicProfile = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check shortlist status when profile + user are ready
+  // Check shortlist status and fetch contact info when profile + recruiter ready
   useEffect(() => {
     if (profile && currentUser && isRecruiter) {
       checkShortlistStatus();
+      fetchContactInfo();
     }
   }, [profile, currentUser, isRecruiter]);
+
+  const fetchContactInfo = async () => {
+    if (!profile) return;
+    const { data } = await supabase.rpc("get_profile_contact_for_recruiter", {
+      _profile_id: profile.id,
+    });
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) setContactInfo(row);
+  };
 
   const checkShortlistStatus = async () => {
     if (!profile || !currentUser) return;
@@ -469,6 +480,27 @@ const PublicProfile = () => {
                   </a>
                 )}
               </div>
+
+              {/* Contact info - visible only to logged-in recruiters */}
+              {contactInfo && isRecruiter && (
+                <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-white/70">
+                  {contactInfo.email && (
+                    <a href={`mailto:${contactInfo.email}`} className="flex items-center gap-1 hover:text-white transition-colors">
+                      <Mail className="w-3.5 h-3.5" />{contactInfo.email}
+                    </a>
+                  )}
+                  {contactInfo.phone && (
+                    <a href={`tel:${contactInfo.phone}`} className="flex items-center gap-1 hover:text-white transition-colors">
+                      <Phone className="w-3.5 h-3.5" />{contactInfo.phone}
+                    </a>
+                  )}
+                  {contactInfo.address && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />{contactInfo.address}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Action buttons row */}
               <div className="flex flex-wrap items-center gap-2 mt-6">
