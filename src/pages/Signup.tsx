@@ -75,10 +75,10 @@ const Signup = () => {
         <div className="relative z-10 px-16 max-w-lg">
           <div className="mb-12">
             <img src={logoSvg} alt="cvZen" className="h-12" />
+            <p className="text-sm font-medium mt-2 tracking-widest uppercase" style={{ color: 'hsl(208 30% 70%)' }}>
+              Intelligent Hiring OS
+            </p>
           </div>
-          <h2 className="text-4xl font-bold mb-3 tracking-tight" style={{ color: 'hsl(0 0% 98%)' }}>
-            Join cvZen
-          </h2>
           <p className="text-lg mb-8 leading-relaxed" style={{ color: 'hsl(208 30% 70%)' }}>
             Whether you're seeking your next career move or building your dream team, our AI-powered platform connects talent with opportunity.
           </p>
