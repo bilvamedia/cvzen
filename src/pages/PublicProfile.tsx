@@ -434,8 +434,6 @@ const PublicProfile = () => {
 
   const socialLinks = Array.isArray(profile.social_links) ? profile.social_links : [];
 
-  const socialLinks = Array.isArray(profile.social_links) ? profile.social_links : [];
-
   return (
     <div className="min-h-screen profile-dark relative overflow-x-hidden">
       {/* Particle Background */}
