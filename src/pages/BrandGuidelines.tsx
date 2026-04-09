@@ -23,8 +23,8 @@ const BrandGuidelines = () => {
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm">Back</span>
           </Link>
-          <div className="h-5 w-px bg-border" />
-          <img src={logoHeader} alt="cvZen" className="h-8 w-auto" />
+          <div className="h-5 w-px bg-white/20" />
+          <img src={logoHeader} alt="cvZen" className="h-10 w-auto" />
         </div>
       </nav>
 
