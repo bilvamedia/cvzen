@@ -57,6 +57,7 @@ const App = () => (
           <Route path="/brand" element={<BrandGuidelines />} />
           <Route path="/profile/:slug" element={<PublicProfile />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
