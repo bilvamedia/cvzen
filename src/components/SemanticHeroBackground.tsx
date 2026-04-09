@@ -43,6 +43,7 @@ interface FloatingTag {
   baseOpacity: number;
   size: number;
   delay: number;
+  autoHighlight: number; // 0-1 intensity of auto-highlight
 }
 
 interface CursorTag {
@@ -75,6 +76,10 @@ export const SemanticHeroBackground = () => {
   const cursorId = useRef(0);
   const animFrame = useRef<number>();
 
+  // Auto-highlight state
+  const autoHighlightRef = useRef<number[]>([]);
+  const highlightIndexRef = useRef(0);
+
   useEffect(() => {
     const tags: FloatingTag[] = FLOATING_QUERIES.map((text, i) => {
       const pos = placeOnEdge(i, FLOATING_QUERIES.length);
@@ -84,12 +89,43 @@ export const SemanticHeroBackground = () => {
         x: pos.x,
         y: pos.y,
         speed: 0.08 + Math.random() * 0.12,
-        baseOpacity: 0.12 + Math.random() * 0.08, // more visible by default
+        baseOpacity: 0.12 + Math.random() * 0.08,
         size: 11 + Math.random() * 3,
         delay: Math.random() * 30,
+        autoHighlight: 0,
       };
     });
     setFloatingTags(tags);
+    autoHighlightRef.current = new Array(tags.length).fill(0);
+  }, []);
+
+  // Auto-highlight: randomly pick a tag every 2s, fade in then out
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const total = FLOATING_QUERIES.length;
+      if (total === 0) return;
+      const idx = Math.floor(Math.random() * total);
+      highlightIndexRef.current = idx;
+
+      // Fade in
+      setFloatingTags((prev) =>
+        prev.map((t, i) => ({
+          ...t,
+          autoHighlight: i === idx ? 1 : t.autoHighlight * 0.85, // decay others
+        }))
+      );
+
+      // Fade out after 1.2s
+      setTimeout(() => {
+        setFloatingTags((prev) =>
+          prev.map((t, i) => ({
+            ...t,
+            autoHighlight: i === idx ? 0 : t.autoHighlight,
+          }))
+        );
+      }, 1200);
+    }, 2500);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -156,16 +192,24 @@ export const SemanticHeroBackground = () => {
   }, []);
 
   // Calculate proximity-based opacity & scale for floating tags
-  const getTagStyle = (tag: FloatingTag): { opacity: number; scale: number } => {
-    if (!mousePos) return { opacity: tag.baseOpacity, scale: 1 };
+  const getTagStyle = (tag: FloatingTag): { opacity: number; scale: number; highlighted: boolean } => {
+    const auto = tag.autoHighlight;
+    if (!mousePos) {
+      return {
+        opacity: tag.baseOpacity + auto * 0.5,
+        scale: 1 + auto * 0.3,
+        highlighted: auto > 0.3,
+      };
+    }
     const dx = tag.x - mousePos.x;
     const dy = tag.y - mousePos.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    // Within ~30% radius, boost opacity and scale
     const proximity = Math.max(0, 1 - dist / 30);
+    const boost = Math.max(proximity, auto);
     return {
-      opacity: tag.baseOpacity + proximity * 0.55,
-      scale: 1 + proximity * 0.35, // zoom in effect on hover proximity
+      opacity: tag.baseOpacity + boost * 0.55,
+      scale: 1 + boost * 0.35,
+      highlighted: boost > 0.3,
     };
   };
 
@@ -179,8 +223,7 @@ export const SemanticHeroBackground = () => {
     >
       {/* Floating background queries — visible, zoom & brighten near cursor */}
       {floatingTags.map((tag) => {
-        const { opacity, scale } = getTagStyle(tag);
-        const isNearMouse = opacity > tag.baseOpacity + 0.1;
+        const { opacity, scale, highlighted } = getTagStyle(tag);
         return (
           <span
             key={tag.id}
@@ -190,12 +233,12 @@ export const SemanticHeroBackground = () => {
               top: `${tag.y}%`,
               fontSize: `${tag.size}px`,
               opacity,
-              color: isNearMouse ? "hsl(203 80% 48%)" : "hsl(240 15% 55%)",
+              color: highlighted ? "hsl(203 80% 48%)" : "hsl(240 15% 55%)",
               transform: `translate(-50%, -50%) scale(${scale})`,
               letterSpacing: "0.02em",
-              fontWeight: isNearMouse ? 600 : 400,
-              transition: "opacity 0.4s ease, color 0.4s ease, transform 0.4s ease, font-weight 0.4s ease",
-              textShadow: isNearMouse ? "0 0 12px hsl(203 80% 48% / 0.3)" : "none",
+              fontWeight: highlighted ? 600 : 400,
+              transition: "opacity 0.6s ease, color 0.6s ease, transform 0.6s ease, font-weight 0.6s ease, text-shadow 0.6s ease",
+              textShadow: highlighted ? "0 0 12px hsl(203 80% 48% / 0.3)" : "none",
             }}
           >
             {tag.text}
