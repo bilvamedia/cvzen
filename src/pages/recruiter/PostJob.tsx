@@ -84,6 +84,20 @@ const PostJob = () => {
       if (error) throw error;
       setPublishedSlug(data?.job_slug);
       toast({ title: "Job published!", description: "Your job listing is now live." });
+
+      // Generate embedding for semantic search (fire-and-forget)
+      if (data?.job_slug) {
+        const { data: jobRow } = await supabase.from("jobs").select("id").eq("job_slug", data.job_slug).single();
+        if (jobRow) {
+          const { data: { session } } = await supabase.auth.getSession();
+          supabase.functions.invoke("generate-embeddings", {
+            body: { jobIds: [jobRow.id] },
+          }).then(res => {
+            if (res.error) console.warn("Job embedding generation failed:", res.error);
+            else console.log("Job embedding generated");
+          });
+        }
+      }
     } catch (err: any) {
       toast({ title: "Failed to post job", description: err.message, variant: "destructive" });
     } finally {
