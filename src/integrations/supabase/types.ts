@@ -941,11 +941,24 @@ export type Database = {
       get_public_job_preferences: {
         Args: { _profile_id: string }
         Returns: {
+          benefits_priorities: string[]
+          company_sizes: string[]
           employment_types: string[]
+          expected_salary_max: number
+          expected_salary_min: number
+          industries: string[]
           interview_availability: Json
+          job_functions: string[]
+          languages: string[]
+          notice_period: string
           preferred_locations: string[]
+          salary_currency: string
           seniority_level: string
           shift_preference: string
+          tools_technologies: string[]
+          travel_willingness: string
+          visa_sponsorship_needed: boolean
+          willing_to_relocate: boolean
           work_modes: string[]
         }[]
       }
