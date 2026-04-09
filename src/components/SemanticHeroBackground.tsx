@@ -99,6 +99,35 @@ export const SemanticHeroBackground = () => {
     autoHighlightRef.current = new Array(tags.length).fill(0);
   }, []);
 
+  // Auto-highlight: randomly pick a tag every 2s, fade in then out
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const total = FLOATING_QUERIES.length;
+      if (total === 0) return;
+      const idx = Math.floor(Math.random() * total);
+      highlightIndexRef.current = idx;
+
+      // Fade in
+      setFloatingTags((prev) =>
+        prev.map((t, i) => ({
+          ...t,
+          autoHighlight: i === idx ? 1 : t.autoHighlight * 0.85, // decay others
+        }))
+      );
+
+      // Fade out after 1.2s
+      setTimeout(() => {
+        setFloatingTags((prev) =>
+          prev.map((t, i) => ({
+            ...t,
+            autoHighlight: i === idx ? 0 : t.autoHighlight,
+          }))
+        );
+      }, 1200);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     let start: number | null = null;
     const animate = (ts: number) => {
