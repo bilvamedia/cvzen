@@ -68,6 +68,11 @@ const JobSearch = () => {
   const [searchingExternal, setSearchingExternal] = useState(false);
   const [searched, setSearched] = useState(false);
   const [searchedExternal, setSearchedExternal] = useState(false);
+
+  // External job search cache: key → { jobs, answer, timestamp }
+  const externalCacheRef = useRef<Map<string, { jobs: ExternalJob[]; answer: string | null; ts: number }>>(new Map());
+  const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+  const autoFetchedRef = useRef(false);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
 
