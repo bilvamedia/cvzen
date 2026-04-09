@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, ArrowRight, Shield, Zap, Brain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import logoSvg from "@/assets/logo.svg";
+import logoSvg from "@/assets/logo-header.svg";
 
 const Login = () => {
   const [email, setEmail] = useState("");
