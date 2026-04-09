@@ -9,28 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Save, User, Lock, LayoutDashboard, FileText, Search, Target, Calendar, CreditCard, PlusCircle, Inbox, Settings as SettingsIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-const candidateNav = [
-  { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
-  { label: "My CV", href: "/candidate/resume", icon: FileText },
-  { label: "Digital Profile", href: "/candidate/profile", icon: User },
-  { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
-  { label: "Search Jobs", href: "/candidate/search", icon: Search },
-  { label: "Interviews", href: "/candidate/interviews", icon: Calendar },
-  { label: "Billing", href: "/candidate/billing", icon: CreditCard },
-  { label: "Settings", href: "/candidate/settings", icon: SettingsIcon },
-];
-
-const recruiterNav = [
-  { label: "Dashboard", href: "/recruiter", icon: LayoutDashboard },
-  { label: "Post Job", href: "/recruiter/post-job", icon: PlusCircle },
-  { label: "My Jobs", href: "/recruiter/jobs", icon: FileText },
-  { label: "Applications", href: "/recruiter/applications", icon: Inbox },
-  { label: "Search Candidates", href: "/recruiter/search", icon: Search },
-  { label: "Interviews", href: "/recruiter/interviews", icon: Calendar },
-  { label: "Billing", href: "/recruiter/billing", icon: CreditCard },
-  { label: "Settings", href: "/recruiter/settings", icon: SettingsIcon },
-];
+import { candidateNavItems, recruiterNavItems } from "@/lib/navItems";
 
 interface SettingsProps {
   role: "candidate" | "recruiter";
@@ -51,7 +30,7 @@ const Settings = ({ role }: SettingsProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const navItems = role === "candidate" ? candidateNav : recruiterNav;
+  const navItems = role === "candidate" ? candidateNavItems : recruiterNavItems;
 
   useEffect(() => {
     const load = async () => {

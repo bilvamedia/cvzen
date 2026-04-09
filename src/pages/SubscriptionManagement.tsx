@@ -15,28 +15,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-const candidateNavItems = [
-  { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
-  { label: "My CV", href: "/candidate/resume", icon: FileText },
-  { label: "Digital Profile", href: "/candidate/profile", icon: User },
-  { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
-  { label: "Search Jobs", href: "/candidate/search", icon: Search },
-  { label: "Interviews", href: "/candidate/interviews", icon: Calendar },
-  { label: "Billing", href: "/candidate/billing", icon: CreditCard },
-  { label: "Settings", href: "/candidate/settings", icon: Settings },
-];
-
-const recruiterNavItems = [
-  { label: "Dashboard", href: "/recruiter", icon: LayoutDashboard },
-  { label: "Post Job", href: "/recruiter/post-job", icon: PlusCircle },
-  { label: "My Jobs", href: "/recruiter/jobs", icon: FileText },
-  { label: "Applications", href: "/recruiter/applications", icon: Inbox },
-  { label: "Search Candidates", href: "/recruiter/search", icon: Search },
-  { label: "Interviews", href: "/recruiter/interviews", icon: Calendar },
-  { label: "Billing", href: "/recruiter/billing", icon: CreditCard },
-  { label: "Settings", href: "/recruiter/settings", icon: Settings },
-];
+import { candidateNavItems, recruiterNavItems } from "@/lib/navItems";
 
 const PLAN_ICONS: Record<string, any> = { Free: Zap, Starter: Sparkles, Pro: Crown, Enterprise: Building2 };
 

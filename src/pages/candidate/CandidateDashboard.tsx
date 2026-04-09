@@ -4,17 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
-const navItems = [
-  { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
-  { label: "My CV", href: "/candidate/resume", icon: FileText },
-  { label: "Digital Profile", href: "/candidate/profile", icon: User },
-  { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
-  { label: "Search Jobs", href: "/candidate/search", icon: Search },
-  { label: "Interviews", href: "/candidate/interviews", icon: Calendar },
-  { label: "Billing", href: "/candidate/billing", icon: CreditCard },
-  { label: "Settings", href: "/candidate/settings", icon: Settings },
-];
+import { candidateNavItems as navItems } from "@/lib/navItems";
 
 const CandidateDashboard = () => {
   const [stats, setStats] = useState({ completeness: 0, sections: 0, atsScore: 0 });

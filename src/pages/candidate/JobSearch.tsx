@@ -17,17 +17,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-const navItems = [
-  { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
-  { label: "My CV", href: "/candidate/resume", icon: FileText },
-  { label: "Digital Profile", href: "/candidate/profile", icon: User },
-  { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
-  { label: "Search Jobs", href: "/candidate/search", icon: Search },
-  { label: "Interviews", href: "/candidate/interviews", icon: Calendar },
-  { label: "Billing", href: "/candidate/billing", icon: CreditCard },
-  { label: "Settings", href: "/candidate/settings", icon: SettingsIcon },
-];
+import { candidateNavItems as navItems } from "@/lib/navItems";
 
 interface Job {
   id: string;

@@ -7,15 +7,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-
-const navItems = [
-  { label: "Dashboard", href: "/recruiter", icon: LayoutDashboard },
-  { label: "Post Job", href: "/recruiter/post-job", icon: PlusCircle },
-  { label: "My Jobs", href: "/recruiter/jobs", icon: FileText },
-  { label: "Applications", href: "/recruiter/applications", icon: Inbox },
-  { label: "Search Candidates", href: "/recruiter/search", icon: Search },
-  { label: "Interviews", href: "/recruiter/interviews", icon: Calendar },
-];
+import { recruiterNavItems as navItems } from "@/lib/navItems";
 
 interface Job {
   id: string;

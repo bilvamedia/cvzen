@@ -15,20 +15,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+import { candidateNavItems as navItems } from "@/lib/navItems";
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-const navItems = [
-  { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
-  { label: "My CV", href: "/candidate/resume", icon: FileText },
-  { label: "Digital Profile", href: "/candidate/profile", icon: User },
-  { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
-  { label: "Search Jobs", href: "/candidate/search", icon: Search },
-];
 
 const CandidateProfile = () => {
   const { toast } = useToast();

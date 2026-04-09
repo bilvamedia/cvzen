@@ -4,17 +4,7 @@ import { LayoutDashboard, FileText, Search, PlusCircle, Calendar, Users, Briefca
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-
-const navItems = [
-  { label: "Dashboard", href: "/recruiter", icon: LayoutDashboard },
-  { label: "Post Job", href: "/recruiter/post-job", icon: PlusCircle },
-  { label: "My Jobs", href: "/recruiter/jobs", icon: FileText },
-  { label: "Applications", href: "/recruiter/applications", icon: Inbox },
-  { label: "Search Candidates", href: "/recruiter/search", icon: Search },
-  { label: "Interviews", href: "/recruiter/interviews", icon: Calendar },
-  { label: "Billing", href: "/recruiter/billing", icon: CreditCard },
-  { label: "Settings", href: "/recruiter/settings", icon: Settings },
-];
+import { recruiterNavItems as navItems } from "@/lib/navItems";
 
 const RecruiterDashboard = () => {
   const [stats, setStats] = useState({ activeJobs: 0, totalCandidates: 0, interviews: 0, shortlisted: 0 });
