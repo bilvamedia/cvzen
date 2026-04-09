@@ -192,16 +192,24 @@ export const SemanticHeroBackground = () => {
   }, []);
 
   // Calculate proximity-based opacity & scale for floating tags
-  const getTagStyle = (tag: FloatingTag): { opacity: number; scale: number } => {
-    if (!mousePos) return { opacity: tag.baseOpacity, scale: 1 };
+  const getTagStyle = (tag: FloatingTag): { opacity: number; scale: number; highlighted: boolean } => {
+    const auto = tag.autoHighlight;
+    if (!mousePos) {
+      return {
+        opacity: tag.baseOpacity + auto * 0.5,
+        scale: 1 + auto * 0.3,
+        highlighted: auto > 0.3,
+      };
+    }
     const dx = tag.x - mousePos.x;
     const dy = tag.y - mousePos.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    // Within ~30% radius, boost opacity and scale
     const proximity = Math.max(0, 1 - dist / 30);
+    const boost = Math.max(proximity, auto);
     return {
-      opacity: tag.baseOpacity + proximity * 0.55,
-      scale: 1 + proximity * 0.35, // zoom in effect on hover proximity
+      opacity: tag.baseOpacity + boost * 0.55,
+      scale: 1 + boost * 0.35,
+      highlighted: boost > 0.3,
     };
   };
 
