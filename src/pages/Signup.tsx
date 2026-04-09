@@ -142,8 +142,8 @@ const Signup = () => {
               <Input id="fullName" placeholder="John Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} required className="h-11 bg-card enterprise-border" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">Work email</Label>
-              <Input id="email" type="email" placeholder="name@company.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 bg-card enterprise-border" />
+              <Label htmlFor="email" className="text-sm font-medium">{role === "recruiter" ? "Work email" : "Email"}</Label>
+              <Input id="email" type="email" placeholder={role === "recruiter" ? "name@company.com" : "name@example.com"} value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 bg-card enterprise-border" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-medium">Password</Label>

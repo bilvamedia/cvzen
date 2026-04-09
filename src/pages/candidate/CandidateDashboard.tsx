@@ -1,5 +1,5 @@
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, User, Search, Share2, Target, ThumbsUp, Bookmark, Eye, Calendar, CreditCard } from "lucide-react";
+import { LayoutDashboard, FileText, User, Search, Share2, Target, ThumbsUp, Bookmark, Eye, Calendar, CreditCard, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -13,6 +13,7 @@ const navItems = [
   { label: "Search Jobs", href: "/candidate/search", icon: Search },
   { label: "Interviews", href: "/candidate/interviews", icon: Calendar },
   { label: "Billing", href: "/candidate/billing", icon: CreditCard },
+  { label: "Settings", href: "/candidate/settings", icon: Settings },
 ];
 
 const CandidateDashboard = () => {
