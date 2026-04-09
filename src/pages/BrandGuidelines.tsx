@@ -17,14 +17,14 @@ const BrandGuidelines = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
+      <nav className="sticky top-0 z-50 border-b border-white/[0.08]" style={{ background: 'hsl(240 55% 16%)' }}>
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center gap-4">
-          <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+          <Link to="/" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors">
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm">Back</span>
           </Link>
-          <div className="h-5 w-px bg-border" />
-          <img src={logoHeader} alt="cvZen" className="h-8 w-auto" />
+          <div className="h-5 w-px bg-white/20" />
+          <img src={logoHeader} alt="cvZen" className="h-10 w-auto" />
         </div>
       </nav>
 
