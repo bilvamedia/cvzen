@@ -222,7 +222,7 @@ const CandidateInterviews = () => {
   const pastInterviews = interviews.filter((i) => ["completed", "cancelled"].includes(i.status));
 
   return (
-    <DashboardLayout title="My Interviews" navItems={navItems} requiredRole="candidate">
+    <DashboardLayout navItems={navItems} role="candidate">
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
