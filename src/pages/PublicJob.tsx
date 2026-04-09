@@ -704,14 +704,12 @@ const PublicJob = () => {
       {/* ── Auth Modal ── */}
       <Dialog open={applyStep === "auth"} onOpenChange={(open) => !authLoading && !open && setApplyStep("idle")}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <img src={logoHeader} alt="cvZen" className="h-6" />
-              <span className="text-xs font-normal tracking-widest uppercase" style={{ color: 'hsl(208 30% 70%)' }}>
-                Intelligent Hiring OS
-              </span>
-            </DialogTitle>
-          </DialogHeader>
+          <div className="flex flex-col items-center pt-2 pb-1">
+            <img src={logoHeader} alt="cvZen" className="h-10" />
+            <p className="text-[10px] font-medium mt-1.5 tracking-[0.25em] uppercase text-muted-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Intelligent Hiring OS
+            </p>
+          </div>
 
           <div className="pt-2">
             <h3 className="text-lg font-semibold mb-1">
