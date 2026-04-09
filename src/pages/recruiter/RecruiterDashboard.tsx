@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, Search, PlusCircle, Calendar, Users, Briefcase, TrendingUp, Star, ExternalLink, Inbox } from "lucide-react";
+import { LayoutDashboard, FileText, Search, PlusCircle, Calendar, Users, Briefcase, TrendingUp, Star, ExternalLink, Inbox, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ const navItems = [
   { label: "Applications", href: "/recruiter/applications", icon: Inbox },
   { label: "Search Candidates", href: "/recruiter/search", icon: Search },
   { label: "Interviews", href: "/recruiter/interviews", icon: Calendar },
+  { label: "Billing", href: "/recruiter/billing", icon: CreditCard },
 ];
 
 const RecruiterDashboard = () => {

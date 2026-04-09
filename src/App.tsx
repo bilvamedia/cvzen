@@ -26,6 +26,7 @@ import BrandGuidelines from "./pages/BrandGuidelines";
 import PublicProfile from "./pages/PublicProfile";
 import Unsubscribe from "./pages/Unsubscribe";
 import Pricing from "./pages/Pricing";
+import SubscriptionManagement from "./pages/SubscriptionManagement";
 
 const queryClient = new QueryClient();
 
@@ -45,12 +46,14 @@ const App = () => (
           <Route path="/candidate/ats-score" element={<ATSScore />} />
           <Route path="/candidate/search" element={<JobSearch />} />
           <Route path="/candidate/interviews" element={<CandidateInterviews />} />
+          <Route path="/candidate/billing" element={<SubscriptionManagement role="candidate" />} />
           <Route path="/recruiter" element={<RecruiterDashboard />} />
           <Route path="/recruiter/post-job" element={<PostJob />} />
           <Route path="/recruiter/jobs" element={<RecruiterJobs />} />
           <Route path="/recruiter/search" element={<CandidateSearch />} />
           <Route path="/recruiter/applications" element={<Applications />} />
           <Route path="/recruiter/interviews" element={<InterviewScheduling />} />
+          <Route path="/recruiter/billing" element={<SubscriptionManagement role="recruiter" />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
