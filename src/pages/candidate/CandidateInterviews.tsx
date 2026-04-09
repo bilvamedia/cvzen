@@ -3,7 +3,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import {
   LayoutDashboard, FileText, User, Search, Target, Calendar,
   Video, Phone, MapPin, Clock, Download, Check, X, CalendarClock,
-  Loader2, MessageSquare,
+  Loader2, MessageSquare, CreditCard, Settings as SettingsIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

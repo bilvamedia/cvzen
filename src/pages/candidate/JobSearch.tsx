@@ -4,7 +4,7 @@ import {
   LayoutDashboard, FileText, User, Search, Target, Calendar,
   Sparkles, MapPin, Building2, Clock, Briefcase, ChevronDown, ChevronUp,
   Loader2, Send, Wand2, CheckCircle2, XCircle, Eye, ArrowRight,
-  DollarSign, Star, BadgeCheck,
+  DollarSign, Star, BadgeCheck, CreditCard, Settings as SettingsIcon,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
