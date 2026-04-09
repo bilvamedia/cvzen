@@ -97,13 +97,13 @@ Deno.serve(async (req) => {
       periodEnd.setMonth(periodEnd.getMonth() + 1);
     }
 
-    // Create subscription
+    // Create subscription (pending until payment confirmed)
     const { data: subscription, error: subError } = await supabase
       .from("subscriptions")
       .insert({
         user_id: user.id,
         plan_id,
-        status: "active",
+        status: "pending",
         billing_cycle,
         current_period_start: now.toISOString(),
         current_period_end: periodEnd.toISOString(),
@@ -159,7 +159,9 @@ Deno.serve(async (req) => {
       }
 
       // Build redirect URL
-      const redirectUrl = `${req.headers.get("origin") || "https://cvzen.lovable.app"}/pricing?payment_status=success&txn_id=${merchantTransactionId}`;
+      // Determine role from plan target_role for redirect
+      const dashRole = plan.target_role === "recruiter" ? "recruiter" : "candidate";
+      const redirectUrl = `${req.headers.get("origin") || "https://cvzen.lovable.app"}/${dashRole}/billing?payment_status=success&txn_id=${merchantTransactionId}`;
       const callbackUrl = `${supabaseUrl}/functions/v1/phonepe-callback`;
 
       // PhonePe v1 payload (amount in paisa)
