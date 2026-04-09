@@ -76,6 +76,10 @@ export const SemanticHeroBackground = () => {
   const cursorId = useRef(0);
   const animFrame = useRef<number>();
 
+  // Auto-highlight state
+  const autoHighlightRef = useRef<number[]>([]);
+  const highlightIndexRef = useRef(0);
+
   useEffect(() => {
     const tags: FloatingTag[] = FLOATING_QUERIES.map((text, i) => {
       const pos = placeOnEdge(i, FLOATING_QUERIES.length);
@@ -85,12 +89,14 @@ export const SemanticHeroBackground = () => {
         x: pos.x,
         y: pos.y,
         speed: 0.08 + Math.random() * 0.12,
-        baseOpacity: 0.12 + Math.random() * 0.08, // more visible by default
+        baseOpacity: 0.12 + Math.random() * 0.08,
         size: 11 + Math.random() * 3,
         delay: Math.random() * 30,
+        autoHighlight: 0,
       };
     });
     setFloatingTags(tags);
+    autoHighlightRef.current = new Array(tags.length).fill(0);
   }, []);
 
   useEffect(() => {
