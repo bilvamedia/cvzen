@@ -179,10 +179,10 @@ const JobSearch = () => {
         candidate_id: user.id,
         job_id: selectedJob.id,
         cover_letter: coverLetter || null,
-        optimized_resume_snapshot: optimizedSections,
+        optimized_resume_snapshot: optimizedSections as any,
         match_score: matchScore,
         status: "applied",
-      });
+      } as any);
 
       if (error) {
         if (error.code === "23505") {
