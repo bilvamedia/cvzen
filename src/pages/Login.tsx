@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, ArrowRight, Shield, Zap, Brain } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Shield, Zap, Brain, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import logoSvg from "@/assets/logo-header.svg";
@@ -53,10 +53,10 @@ const Login = () => {
         <div className="relative z-10 px-16 max-w-lg">
           <div className="mb-12">
             <img src={logoSvg} alt="cvZen" className="h-12" />
+            <p className="text-sm font-medium mt-2 tracking-widest uppercase" style={{ color: 'hsl(208 30% 70%)' }}>
+              Intelligent Hiring OS
+            </p>
           </div>
-          <h2 className="text-4xl font-bold mb-3 tracking-tight" style={{ color: 'hsl(0 0% 98%)' }}>
-            Welcome back
-          </h2>
           <p className="text-lg mb-10 leading-relaxed" style={{ color: 'hsl(208 30% 70%)' }}>
             Your intelligent hiring platform awaits. Access your dashboard to manage profiles, discover opportunities, and leverage AI-powered insights.
           </p>
@@ -74,7 +74,15 @@ const Login = () => {
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 relative">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-4 left-4 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate("/")}
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" /> Home
+        </Button>
         <div className="w-full max-w-[400px]">
           <div className="lg:hidden flex items-center gap-2 mb-10">
             <img src={logoSvg} alt="cvZen" className="h-9" />

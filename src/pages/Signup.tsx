@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, User, Briefcase, Check, ArrowRight, Sparkles } from "lucide-react";
+import { Eye, EyeOff, User, Briefcase, Check, ArrowRight, Sparkles, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import logoSvg from "@/assets/logo-header.svg";
@@ -75,10 +75,10 @@ const Signup = () => {
         <div className="relative z-10 px-16 max-w-lg">
           <div className="mb-12">
             <img src={logoSvg} alt="cvZen" className="h-12" />
+            <p className="text-sm font-medium mt-2 tracking-widest uppercase" style={{ color: 'hsl(208 30% 70%)' }}>
+              Intelligent Hiring OS
+            </p>
           </div>
-          <h2 className="text-4xl font-bold mb-3 tracking-tight" style={{ color: 'hsl(0 0% 98%)' }}>
-            Join cvZen
-          </h2>
           <p className="text-lg mb-8 leading-relaxed" style={{ color: 'hsl(208 30% 70%)' }}>
             Whether you're seeking your next career move or building your dream team, our AI-powered platform connects talent with opportunity.
           </p>
@@ -92,7 +92,15 @@ const Signup = () => {
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 overflow-y-auto relative">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-4 left-4 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate("/")}
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" /> Home
+        </Button>
         <div className="w-full max-w-[440px] py-4">
           <div className="lg:hidden flex items-center gap-2 mb-8">
             <img src={logoSvg} alt="cvZen" className="h-9" />
