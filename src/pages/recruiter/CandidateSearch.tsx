@@ -1,6 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, Search, PlusCircle, Calendar, Sparkles, Users, ExternalLink, Star, Loader2 } from "lucide-react";
+import { LayoutDashboard, FileText, Search, PlusCircle, Calendar, Sparkles, Users, ExternalLink, Star, Loader2, Inbox } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ const navItems = [
   { label: "Dashboard", href: "/recruiter", icon: LayoutDashboard },
   { label: "Post Job", href: "/recruiter/post-job", icon: PlusCircle },
   { label: "My Jobs", href: "/recruiter/jobs", icon: FileText },
+  { label: "Applications", href: "/recruiter/applications", icon: Inbox },
   { label: "Search Candidates", href: "/recruiter/search", icon: Search },
   { label: "Interviews", href: "/recruiter/interviews", icon: Calendar },
 ];
