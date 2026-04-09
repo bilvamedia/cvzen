@@ -691,7 +691,7 @@ const PublicJob = () => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <img src={logoHeader} alt="cvZen" className="h-6" />
-            <span className="text-xs text-white/50">Intelligent Hiring OS</span>
+            <span className="text-[10px] font-medium tracking-[0.25em] uppercase text-white/50" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Intelligent Hiring OS</span>
           </div>
           <div className="flex gap-4 text-xs text-white/40">
             <Link to="/privacy" className="hover:text-white/70 transition-colors">Privacy</Link>
