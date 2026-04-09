@@ -92,7 +92,15 @@ const Signup = () => {
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 overflow-y-auto relative">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-4 left-4 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate("/")}
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" /> Home
+        </Button>
         <div className="w-full max-w-[440px] py-4">
           <div className="lg:hidden flex items-center gap-2 mb-8">
             <img src={logoSvg} alt="cvZen" className="h-9" />
