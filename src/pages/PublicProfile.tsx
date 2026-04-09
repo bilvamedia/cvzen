@@ -414,19 +414,21 @@ const PublicProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center profile-dark">
+        <Loader2 className="w-8 h-8 animate-spin text-[hsl(203_80%_48%)]" />
       </div>
     );
   }
 
   if (notFound || !profile) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <h1 className="text-2xl font-bold text-foreground">Profile Not Found</h1>
-        <p className="text-muted-foreground">This profile doesn't exist or hasn't been set up yet.</p>
+      <div className="min-h-screen flex flex-col items-center justify-center profile-dark gap-4">
+        <h1 className="text-2xl font-bold text-[hsl(220_20%_92%)]">Profile Not Found</h1>
+        <p className="text-[hsl(220_10%_55%)]">This profile doesn't exist or hasn't been set up yet.</p>
         <Link to="/">
-          <Button variant="outline"><ArrowLeft className="w-4 h-4 mr-2" />Back to Home</Button>
+          <Button variant="outline" className="border-[hsl(240_10%_20%)] text-[hsl(220_20%_92%)] hover:bg-[hsl(240_15%_12%)]">
+            <ArrowLeft className="w-4 h-4 mr-2" />Back to Home
+          </Button>
         </Link>
       </div>
     );
