@@ -94,6 +94,11 @@ const Landing = () => {
             <img src={logoHeader} alt="cvZen — Intelligent Hiring OS" className="h-10 w-auto" />
           </Link>
           <div className="flex items-center gap-2">
+            <Link to="/pricing">
+              <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10 focus-ring transition-colors duration-200">
+                Pricing
+              </Button>
+            </Link>
             <Link to="/login">
               <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10 focus-ring transition-colors duration-200">
                 Sign in

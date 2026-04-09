@@ -25,6 +25,7 @@ import Disclaimer from "./pages/Disclaimer";
 import BrandGuidelines from "./pages/BrandGuidelines";
 import PublicProfile from "./pages/PublicProfile";
 import Unsubscribe from "./pages/Unsubscribe";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
           <Route path="/brand" element={<BrandGuidelines />} />
           <Route path="/profile/:slug" element={<PublicProfile />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
