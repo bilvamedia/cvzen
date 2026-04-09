@@ -16,6 +16,7 @@ import PostJob from "./pages/recruiter/PostJob";
 import RecruiterJobs from "./pages/recruiter/RecruiterJobs";
 import CandidateSearch from "./pages/recruiter/CandidateSearch";
 import InterviewScheduling from "./pages/recruiter/InterviewScheduling";
+import CandidateInterviews from "./pages/candidate/CandidateInterviews";
 import NotFound from "./pages/NotFound";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/candidate/profile" element={<CandidateProfile />} />
           <Route path="/candidate/ats-score" element={<ATSScore />} />
           <Route path="/candidate/search" element={<JobSearch />} />
+          <Route path="/candidate/interviews" element={<CandidateInterviews />} />
           <Route path="/recruiter" element={<RecruiterDashboard />} />
           <Route path="/recruiter/post-job" element={<PostJob />} />
           <Route path="/recruiter/jobs" element={<RecruiterJobs />} />
