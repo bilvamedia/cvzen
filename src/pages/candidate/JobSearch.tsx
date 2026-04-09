@@ -213,7 +213,25 @@ const JobSearch = () => {
     handleExternalSearch(query);
   };
 
+  const buildCacheKey = (q: string, loc: string, skills: string[]) =>
+    `${q.trim().toLowerCase()}|${loc.trim().toLowerCase()}|${skills.sort().join(",")}`;
+
   const handleExternalSearch = async (searchQuery: string) => {
+    const cacheKey = buildCacheKey(
+      searchQuery,
+      candidateLocation || filterLocation || "",
+      candidateSkills
+    );
+
+    // Check cache
+    const cached = externalCacheRef.current.get(cacheKey);
+    if (cached && Date.now() - cached.ts < CACHE_TTL) {
+      setExternalJobs(cached.jobs);
+      setExternalAnswer(cached.answer);
+      setSearchedExternal(true);
+      return;
+    }
+
     setSearchingExternal(true);
     setSearchedExternal(true);
     try {
@@ -226,11 +244,15 @@ const JobSearch = () => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      setExternalJobs(data.jobs || []);
-      setExternalAnswer(data.answer || null);
+      const jobs = data.jobs || [];
+      const answer = data.answer || null;
+      setExternalJobs(jobs);
+      setExternalAnswer(answer);
+
+      // Store in cache
+      externalCacheRef.current.set(cacheKey, { jobs, answer, ts: Date.now() });
     } catch (err: any) {
       console.error("External search failed:", err);
-      // Don't show error toast for external - graceful degradation
     } finally {
       setSearchingExternal(false);
     }
