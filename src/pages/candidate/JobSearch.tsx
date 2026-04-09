@@ -70,6 +70,7 @@ const JobSearch = () => {
   const [matchScore, setMatchScore] = useState(0);
   const [optimizationSummary, setOptimizationSummary] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
+  const [generatingCoverLetter, setGeneratingCoverLetter] = useState(false);
   const [applying, setApplying] = useState(false);
   const [showApplyDialog, setShowApplyDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"optimized" | "original">("optimized");
