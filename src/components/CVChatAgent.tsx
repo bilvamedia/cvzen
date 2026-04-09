@@ -131,7 +131,9 @@ const CVChatAgent = ({ profileId, candidateName, avatarUrl }: CVChatAgentProps) 
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <Bot className="w-7 h-7 text-primary-foreground" />
+                <span className="text-lg font-bold text-primary-foreground">
+                  {candidateName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?"}
+                </span>
               )}
             </div>
             <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-background flex items-center justify-center">
@@ -163,7 +165,9 @@ const CVChatAgent = ({ profileId, candidateName, avatarUrl }: CVChatAgentProps) 
                 />
               ) : (
                 <div className="w-full h-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-primary" />
+                  <span className="text-xs font-bold text-primary">
+                    {candidateName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?"}
+                  </span>
                 </div>
               )}
               <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background" />
@@ -226,7 +230,7 @@ const CVChatAgent = ({ profileId, candidateName, avatarUrl }: CVChatAgentProps) 
                 )}
               >
                 {msg.role === "assistant" && (
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden">
                     {avatarUrl ? (
                       <img
                         src={avatarUrl}
@@ -234,7 +238,7 @@ const CVChatAgent = ({ profileId, candidateName, avatarUrl }: CVChatAgentProps) 
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
-                      <Bot className="w-4 h-4 text-primary" />
+                      <span className="text-[10px] font-bold text-primary">{candidateName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?"}</span>
                     )}
                   </div>
                 )}
@@ -259,7 +263,7 @@ const CVChatAgent = ({ profileId, candidateName, avatarUrl }: CVChatAgentProps) 
 
             {isLoading && (
               <div className="flex gap-2">
-                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
                   {avatarUrl ? (
                     <img
                       src={avatarUrl}
@@ -267,7 +271,7 @@ const CVChatAgent = ({ profileId, candidateName, avatarUrl }: CVChatAgentProps) 
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
-                    <Bot className="w-4 h-4 text-primary" />
+                    <span className="text-[10px] font-bold text-primary">{candidateName?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?"}</span>
                   )}
                 </div>
                 <div className="bg-muted rounded-2xl rounded-tl-md px-4 py-3">

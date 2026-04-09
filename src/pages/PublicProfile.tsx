@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { stripMarkdown } from "@/lib/stripMarkdown";
 const CVChatAgent = lazy(() => import("@/components/CVChatAgent"));
+import JobPreferences from "@/components/JobPreferences";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -590,6 +591,9 @@ const PublicProfile = () => {
             </div>
           </div>
         )}
+
+        {/* Job Preferences */}
+        <JobPreferences profileId={profile.id} />
 
         {/* CV Sections */}
         {sections.length > 0 && (

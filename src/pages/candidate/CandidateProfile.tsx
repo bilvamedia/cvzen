@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ResumeSections from "@/components/ResumeSections";
+import JobPreferences from "@/components/JobPreferences";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -549,6 +550,11 @@ const CandidateProfile = () => {
             </div>
           </div>
         </div>
+
+        {/* Job Preferences */}
+        {profile?.id && (
+          <JobPreferences editable userId={profile.id} />
+        )}
 
         {/* Sections */}
         {sections.length > 0 ? (
