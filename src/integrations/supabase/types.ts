@@ -307,39 +307,78 @@ export type Database = {
       }
       job_preferences: {
         Row: {
+          benefits_priorities: string[]
+          company_sizes: string[]
           created_at: string
           employment_types: string[]
+          expected_salary_max: number | null
+          expected_salary_min: number | null
           id: string
+          industries: string[]
           interview_availability: Json
+          job_functions: string[]
+          languages: string[]
+          notice_period: string | null
           preferred_locations: string[]
+          salary_currency: string | null
           seniority_level: string | null
           shift_preference: string | null
+          tools_technologies: string[]
+          travel_willingness: string | null
           updated_at: string
           user_id: string
+          visa_sponsorship_needed: boolean | null
+          willing_to_relocate: boolean | null
           work_modes: string[]
         }
         Insert: {
+          benefits_priorities?: string[]
+          company_sizes?: string[]
           created_at?: string
           employment_types?: string[]
+          expected_salary_max?: number | null
+          expected_salary_min?: number | null
           id?: string
+          industries?: string[]
           interview_availability?: Json
+          job_functions?: string[]
+          languages?: string[]
+          notice_period?: string | null
           preferred_locations?: string[]
+          salary_currency?: string | null
           seniority_level?: string | null
           shift_preference?: string | null
+          tools_technologies?: string[]
+          travel_willingness?: string | null
           updated_at?: string
           user_id: string
+          visa_sponsorship_needed?: boolean | null
+          willing_to_relocate?: boolean | null
           work_modes?: string[]
         }
         Update: {
+          benefits_priorities?: string[]
+          company_sizes?: string[]
           created_at?: string
           employment_types?: string[]
+          expected_salary_max?: number | null
+          expected_salary_min?: number | null
           id?: string
+          industries?: string[]
           interview_availability?: Json
+          job_functions?: string[]
+          languages?: string[]
+          notice_period?: string | null
           preferred_locations?: string[]
+          salary_currency?: string | null
           seniority_level?: string | null
           shift_preference?: string | null
+          tools_technologies?: string[]
+          travel_willingness?: string | null
           updated_at?: string
           user_id?: string
+          visa_sponsorship_needed?: boolean | null
+          willing_to_relocate?: boolean | null
           work_modes?: string[]
         }
         Relationships: []
