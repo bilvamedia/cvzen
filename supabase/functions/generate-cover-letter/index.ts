@@ -37,10 +37,10 @@ serve(async (req) => {
       });
     }
 
-    // Fetch job details
+    // Fetch job details including recruiter_id
     const { data: job, error: jobError } = await supabase
       .from("jobs")
-      .select("title, company, description, skills, experience_level, location")
+      .select("title, company, description, skills, experience_level, location, recruiter_id")
       .eq("id", jobId)
       .single();
 
@@ -49,6 +49,18 @@ serve(async (req) => {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Fetch recruiter/hiring manager name
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    const { data: recruiterProfile } = await serviceClient
+      .from("profiles")
+      .select("full_name")
+      .eq("id", job.recruiter_id)
+      .single();
+    const hiringManagerName = recruiterProfile?.full_name || "Hiring Manager";
 
     // Fetch candidate profile
     const { data: profile } = await supabase
@@ -93,27 +105,31 @@ serve(async (req) => {
     const skills = Array.isArray(job.skills) ? (job.skills as string[]).join(", ") : "";
 
     const systemPrompt = `You are an expert career coach who writes compelling, personalized cover letters. Write concise, professional cover letters (200-300 words) that:
+- Start with "Dear [Hiring Manager Name]," using the provided hiring manager name
 - Open with genuine enthusiasm for the specific role and company
 - Highlight 2-3 most relevant experiences/skills from the candidate's background that match the job
 - Show understanding of the company's needs based on the job description
-- Close with a confident call to action
+- Close with "Sincerely," followed by the candidate's full name on the next line
 - Use a professional but warm tone
 - Do NOT use generic filler phrases like "I am writing to express my interest"
 - Do NOT use markdown formatting, asterisks, or special characters
 - Write in plain text paragraphs only`;
+
+    const candidateName = profile?.full_name || "Candidate";
 
     const userPrompt = `Write a cover letter for this application:
 
 JOB:
 Title: ${job.title}
 Company: ${job.company}
+Hiring Manager: ${hiringManagerName}
 ${job.location ? `Location: ${job.location}` : ""}
 ${job.experience_level ? `Level: ${job.experience_level}` : ""}
 ${skills ? `Key Skills: ${skills}` : ""}
 Description: ${job.description.slice(0, 1500)}
 
 CANDIDATE:
-Name: ${profile?.full_name || "Candidate"}
+Name: ${candidateName}
 ${profile?.headline ? `Headline: ${profile.headline}` : ""}
 ${resumeSummary ? `Resume Summary:\n${resumeSummary}` : ""}`;
 
