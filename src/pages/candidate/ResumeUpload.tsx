@@ -5,14 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ResumeSections from "@/components/ResumeSections";
-
-const navItems = [
-  { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
-  { label: "My CV", href: "/candidate/resume", icon: FileText },
-  { label: "Digital Profile", href: "/candidate/profile", icon: User },
-  { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
-  { label: "Search Jobs", href: "/candidate/search", icon: Search },
-];
+import { candidateNavItems as navItems } from "@/lib/navItems";
 
 const ResumeUpload = () => {
   const [file, setFile] = useState<File | null>(null);

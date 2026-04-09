@@ -3,7 +3,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import {
   LayoutDashboard, FileText, User, Search, Target, Calendar,
   Video, Phone, MapPin, Clock, Download, Check, X, CalendarClock,
-  Loader2, MessageSquare,
+  Loader2, MessageSquare, CreditCard, Settings as SettingsIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,15 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { generateICS, downloadICS } from "@/lib/icsGenerator";
-
-const navItems = [
-  { label: "Dashboard", href: "/candidate", icon: LayoutDashboard },
-  { label: "My CV", href: "/candidate/resume", icon: FileText },
-  { label: "Digital Profile", href: "/candidate/profile", icon: User },
-  { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
-  { label: "Search Jobs", href: "/candidate/search", icon: Search },
-  { label: "Interviews", href: "/candidate/interviews", icon: Calendar },
-];
+import { candidateNavItems as navItems } from "@/lib/navItems";
 
 interface Interview {
   id: string;

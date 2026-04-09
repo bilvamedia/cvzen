@@ -14,15 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { generateICS, downloadICS } from "@/lib/icsGenerator";
-
-const navItems = [
-  { label: "Dashboard", href: "/recruiter", icon: LayoutDashboard },
-  { label: "Post Job", href: "/recruiter/post-job", icon: PlusCircle },
-  { label: "My Jobs", href: "/recruiter/jobs", icon: FileText },
-  { label: "Applications", href: "/recruiter/applications", icon: Inbox },
-  { label: "Search Candidates", href: "/recruiter/search", icon: Search },
-  { label: "Interviews", href: "/recruiter/interviews", icon: Calendar },
-];
+import { recruiterNavItems as navItems } from "@/lib/navItems";
 
 interface Interview {
   id: string;
