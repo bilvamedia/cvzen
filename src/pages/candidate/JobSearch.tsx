@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
   Search, Sparkles, MapPin, Building2, Briefcase, ChevronDown, ChevronUp,
@@ -68,6 +68,11 @@ const JobSearch = () => {
   const [searchingExternal, setSearchingExternal] = useState(false);
   const [searched, setSearched] = useState(false);
   const [searchedExternal, setSearchedExternal] = useState(false);
+
+  // External job search cache: key → { jobs, answer, timestamp }
+  const externalCacheRef = useRef<Map<string, { jobs: ExternalJob[]; answer: string | null; ts: number }>>(new Map());
+  const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+  const autoFetchedRef = useRef(false);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
 
@@ -140,9 +145,18 @@ const JobSearch = () => {
     init();
   }, []);
 
-  // Auto-search external jobs on mount if candidate has skills
+  // Auto-search external jobs when tab is switched to external
   useEffect(() => {
-    if (candidateSkills.length > 0 && !searchedExternal) {
+    if (activeTab === "external" && !searchedExternal && !autoFetchedRef.current && candidateSkills.length > 0) {
+      autoFetchedRef.current = true;
+      handleExternalSearch(candidateSkills.slice(0, 5).join(", "));
+    }
+  }, [activeTab, candidateSkills, searchedExternal]);
+
+  // Also trigger when skills load and tab is already external
+  useEffect(() => {
+    if (candidateSkills.length > 0 && activeTab === "external" && !searchedExternal && !autoFetchedRef.current) {
+      autoFetchedRef.current = true;
       handleExternalSearch(candidateSkills.slice(0, 5).join(", "));
     }
   }, [candidateSkills]);
@@ -199,7 +213,25 @@ const JobSearch = () => {
     handleExternalSearch(query);
   };
 
+  const buildCacheKey = (q: string, loc: string, skills: string[]) =>
+    `${q.trim().toLowerCase()}|${loc.trim().toLowerCase()}|${skills.sort().join(",")}`;
+
   const handleExternalSearch = async (searchQuery: string) => {
+    const cacheKey = buildCacheKey(
+      searchQuery,
+      candidateLocation || filterLocation || "",
+      candidateSkills
+    );
+
+    // Check cache
+    const cached = externalCacheRef.current.get(cacheKey);
+    if (cached && Date.now() - cached.ts < CACHE_TTL) {
+      setExternalJobs(cached.jobs);
+      setExternalAnswer(cached.answer);
+      setSearchedExternal(true);
+      return;
+    }
+
     setSearchingExternal(true);
     setSearchedExternal(true);
     try {
@@ -212,11 +244,15 @@ const JobSearch = () => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      setExternalJobs(data.jobs || []);
-      setExternalAnswer(data.answer || null);
+      const jobs = data.jobs || [];
+      const answer = data.answer || null;
+      setExternalJobs(jobs);
+      setExternalAnswer(answer);
+
+      // Store in cache
+      externalCacheRef.current.set(cacheKey, { jobs, answer, ts: Date.now() });
     } catch (err: any) {
       console.error("External search failed:", err);
-      // Don't show error toast for external - graceful degradation
     } finally {
       setSearchingExternal(false);
     }
