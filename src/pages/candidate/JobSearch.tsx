@@ -70,6 +70,7 @@ const JobSearch = () => {
   const [matchScore, setMatchScore] = useState(0);
   const [optimizationSummary, setOptimizationSummary] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
+  const [generatingCoverLetter, setGeneratingCoverLetter] = useState(false);
   const [applying, setApplying] = useState(false);
   const [showApplyDialog, setShowApplyDialog] = useState(false);
   const [viewMode, setViewMode] = useState<"optimized" | "original">("optimized");
@@ -467,13 +468,41 @@ const JobSearch = () => {
 
               {/* Cover Letter */}
               <div>
-                <Label className="text-sm font-medium">Cover Letter (optional)</Label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <Label className="text-sm font-medium">Cover Letter</Label>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      if (!selectedJob) return;
+                      setGeneratingCoverLetter(true);
+                      try {
+                        const { data, error } = await supabase.functions.invoke("generate-cover-letter", {
+                          body: { jobId: selectedJob.id },
+                        });
+                        if (error) throw error;
+                        if (data?.error) throw new Error(data.error);
+                        setCoverLetter(data.cover_letter || "");
+                        toast({ title: "Cover Letter Generated", description: "AI has crafted a personalized cover letter. Feel free to edit it." });
+                      } catch (err: any) {
+                        toast({ title: "Generation Failed", description: err.message || "Could not generate cover letter.", variant: "destructive" });
+                      } finally {
+                        setGeneratingCoverLetter(false);
+                      }
+                    }}
+                    disabled={generatingCoverLetter}
+                    className="gap-1.5"
+                  >
+                    {generatingCoverLetter ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+                    {generatingCoverLetter ? "Generating..." : "Generate with AI"}
+                  </Button>
+                </div>
                 <Textarea
                   value={coverLetter}
                   onChange={(e) => setCoverLetter(e.target.value)}
-                  placeholder="Add a brief message to the recruiter..."
-                  rows={3}
-                  className="mt-1.5"
+                  placeholder="Click 'Generate with AI' to create a tailored cover letter, or write your own..."
+                  rows={5}
+                  className="mt-1"
                 />
               </div>
 
