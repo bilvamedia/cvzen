@@ -221,6 +221,21 @@ const JobPreferences = ({ editable = false, userId, profileId }: JobPreferencesP
       setPrefs({ ...form });
       setEditing(false);
       toast({ title: "Preferences saved!" });
+
+      // Generate embeddings for job preferences in the background
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          supabase.functions.invoke("generate-embeddings", {
+            body: { preferencesUserId: userId },
+          }).then(res => {
+            if (res.error) console.warn("Preferences embedding failed:", res.error);
+            else console.log("Preferences embedding generated");
+          });
+        }
+      } catch (embErr) {
+        console.warn("Failed to trigger preferences embedding:", embErr);
+      }
     } catch (err: any) {
       toast({ title: "Save failed", description: err.message, variant: "destructive" });
     } finally { setSaving(false); }
