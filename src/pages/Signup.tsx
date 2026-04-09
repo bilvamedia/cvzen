@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, User, Briefcase, Check, ArrowRight, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import logoSvg from "@/assets/logo.svg";
+import logoSvg from "@/assets/logo-header.svg";
 
 type Role = "candidate" | "recruiter";
 
