@@ -35,14 +35,13 @@ const Applications = () => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
-  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+  const [selectedCoverLetter, setSelectedCoverLetter] = useState<Application | null>(null);
   const { toast } = useToast();
 
   const fetchApplications = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Get recruiter's jobs
     const { data: jobs } = await supabase
       .from("jobs")
       .select("id, title")
@@ -53,7 +52,6 @@ const Applications = () => {
     const jobMap: Record<string, string> = {};
     jobs.forEach(j => { jobMap[j.id] = j.title; });
 
-    // Get applications for those jobs
     const { data: apps } = await supabase
       .from("job_applications")
       .select("*")
@@ -62,7 +60,6 @@ const Applications = () => {
 
     if (!apps || apps.length === 0) { setLoading(false); return; }
 
-    // Get candidate profiles
     const candidateIds = [...new Set(apps.map(a => a.candidate_id))];
     const { data: profiles } = await supabase
       .from("profiles")
@@ -97,32 +94,11 @@ const Applications = () => {
     toast({ title: `Application ${newStatus}` });
   };
 
-  // Group by job
   const grouped: Record<string, Application[]> = {};
   applications.forEach(a => {
     if (!grouped[a.job_id]) grouped[a.job_id] = [];
     grouped[a.job_id].push(a);
   });
-
-  const renderSnapshot = (snapshot: any) => {
-    if (!snapshot || !Array.isArray(snapshot)) return null;
-    return (
-      <div className="space-y-3 mt-3 max-h-[60vh] overflow-y-auto">
-        {snapshot.map((section: any, i: number) => (
-          <div key={i}>
-            <h4 className="font-semibold text-sm text-foreground mb-1">{section.section_title || section.sectionTitle}</h4>
-            <div className="text-xs text-muted-foreground whitespace-pre-wrap">
-              {typeof section.content === "string"
-                ? section.content
-                : typeof section.improved_content === "string"
-                  ? section.improved_content
-                  : JSON.stringify(section.content || section.improved_content, null, 2)}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
 
   return (
     <DashboardLayout navItems={navItems} role="recruiter">
@@ -180,9 +156,22 @@ const Applications = () => {
                           </div>
 
                           <div className="flex items-center gap-1 shrink-0">
-                            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setSelectedApp(app)}>
-                              View CV
-                            </Button>
+                            {app.candidate_slug ? (
+                              <Link to={`/profile/${app.candidate_slug}`} target="_blank">
+                                <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
+                                  <FileText className="h-3 w-3" /> View CV
+                                </Button>
+                              </Link>
+                            ) : (
+                              <Button variant="ghost" size="sm" className="h-7 text-xs" disabled>
+                                No CV
+                              </Button>
+                            )}
+                            {app.cover_letter && (
+                              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setSelectedCoverLetter(app)}>
+                                <FileText className="h-3 w-3" /> Cover Letter
+                              </Button>
+                            )}
                             {app.candidate_slug && (
                               <Link to={`/profile/${app.candidate_slug}`} target="_blank">
                                 <Button variant="ghost" size="icon" className="h-7 w-7"><ExternalLink className="h-3 w-3" /></Button>
@@ -210,25 +199,18 @@ const Applications = () => {
         )}
       </div>
 
-      {/* CV Preview Dialog */}
-      <Dialog open={!!selectedApp} onOpenChange={() => setSelectedApp(null)}>
+      {/* Cover Letter Dialog */}
+      <Dialog open={!!selectedCoverLetter} onOpenChange={() => setSelectedCoverLetter(null)}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              {selectedApp?.candidate_name} — Optimized CV
+              <FileText className="h-4 w-4" />
+              {selectedCoverLetter?.candidate_name} — Cover Letter
             </DialogTitle>
           </DialogHeader>
-          {selectedApp?.cover_letter && (
-            <div className="mb-3">
-              <h4 className="font-semibold text-sm text-foreground mb-1">Cover Letter</h4>
-              <p className="text-xs text-muted-foreground whitespace-pre-wrap">{selectedApp.cover_letter}</p>
-            </div>
-          )}
-          {renderSnapshot(selectedApp?.optimized_resume_snapshot)}
-          {!selectedApp?.optimized_resume_snapshot && !selectedApp?.cover_letter && (
-            <p className="text-sm text-muted-foreground py-4 text-center">No optimized CV snapshot available.</p>
-          )}
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+            {selectedCoverLetter?.cover_letter}
+          </p>
         </DialogContent>
       </Dialog>
     </DashboardLayout>
