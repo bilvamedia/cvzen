@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp, Bookmark, BookmarkCheck, X, LogIn, Mail, Phone, MapPin } from "lucide-react";
@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { stripMarkdown } from "@/lib/stripMarkdown";
+const CVChatAgent = lazy(() => import("@/components/CVChatAgent"));
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -658,6 +659,15 @@ const PublicProfile = () => {
           Powered by <Link to="/" className="text-primary hover:underline font-medium">CVZen.ai</Link>
         </div>
       </div>
+
+      {/* AI Chat Agent */}
+      <Suspense fallback={null}>
+        <CVChatAgent
+          profileId={profile.id}
+          candidateName={profile.full_name || "Candidate"}
+          avatarUrl={profile.avatar_url}
+        />
+      </Suspense>
 
       {/* Auth Modal */}
       <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
