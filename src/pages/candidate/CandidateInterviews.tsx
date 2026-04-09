@@ -24,6 +24,8 @@ const navItems = [
   { label: "ATS Score", href: "/candidate/ats-score", icon: Target },
   { label: "Search Jobs", href: "/candidate/search", icon: Search },
   { label: "Interviews", href: "/candidate/interviews", icon: Calendar },
+  { label: "Billing", href: "/candidate/billing", icon: CreditCard },
+  { label: "Settings", href: "/candidate/settings", icon: SettingsIcon },
 ];
 
 interface Interview {
