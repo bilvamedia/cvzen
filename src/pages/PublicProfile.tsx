@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp, Bookmark, BookmarkCheck, X, LogIn, Mail, Phone, MapPin } from "lucide-react";
+import logoHeader from "@/assets/logo-header.svg";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -661,13 +662,13 @@ const PublicProfile = () => {
       {/* Auth Modal */}
       <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <LogIn className="w-5 h-5 text-primary" />
-              Recruiter Sign In
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
+          <div className="flex flex-col items-center pt-2 pb-1">
+            <img src={logoHeader} alt="cvZen" className="h-10" />
+            <p className="text-[10px] font-medium mt-1.5 tracking-[0.25em] uppercase text-muted-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Intelligent Hiring OS
+            </p>
+          </div>
+          <p className="text-sm text-muted-foreground text-center">
             Sign in or create a recruiter account to shortlist this candidate.
           </p>
           <Tabs value={authTab} onValueChange={setAuthTab} className="mt-2">
