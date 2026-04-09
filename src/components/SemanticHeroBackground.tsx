@@ -55,14 +55,13 @@ interface CursorTag {
 
 // Distribute tags across edges and corners — avoid center text
 const placeOnEdge = (index: number, total: number): { x: number; y: number } => {
-  // Split into 4 edge zones: top, bottom, left, right
   const zone = index % 4;
   const rand = () => Math.random();
   switch (zone) {
-    case 0: return { x: 5 + rand() * 90, y: 2 + rand() * 8 };       // top strip
-    case 1: return { x: 5 + rand() * 90, y: 82 + rand() * 16 };      // bottom strip
-    case 2: return { x: 1 + rand() * 8, y: 15 + rand() * 60 };       // left strip
-    case 3: return { x: 91 + rand() * 8, y: 15 + rand() * 60 };      // right strip
+    case 0: return { x: 5 + rand() * 90, y: 2 + rand() * 8 };
+    case 1: return { x: 5 + rand() * 90, y: 82 + rand() * 16 };
+    case 2: return { x: 1 + rand() * 8, y: 15 + rand() * 60 };
+    case 3: return { x: 91 + rand() * 8, y: 15 + rand() * 60 };
     default: return { x: rand() * 100, y: rand() * 100 };
   }
 };
@@ -85,8 +84,8 @@ export const SemanticHeroBackground = () => {
         x: pos.x,
         y: pos.y,
         speed: 0.08 + Math.random() * 0.12,
-        baseOpacity: 0.04 + Math.random() * 0.04, // very faint by default
-        size: 10 + Math.random() * 2,
+        baseOpacity: 0.12 + Math.random() * 0.08, // more visible by default
+        size: 11 + Math.random() * 3,
         delay: Math.random() * 30,
       };
     });
@@ -135,7 +134,6 @@ export const SemanticHeroBackground = () => {
       if (now - lastSpawn.current < 400) return;
       lastSpawn.current = now;
 
-      // Only spawn cursor tags outside center text zone
       const inCenter = x > 15 && x < 85 && y > 12 && y < 78;
       if (inCenter) return;
 
@@ -157,15 +155,18 @@ export const SemanticHeroBackground = () => {
     setMousePos(null);
   }, []);
 
-  // Calculate proximity-based opacity boost for floating tags
-  const getTagOpacity = (tag: FloatingTag): number => {
-    if (!mousePos) return tag.baseOpacity;
+  // Calculate proximity-based opacity & scale for floating tags
+  const getTagStyle = (tag: FloatingTag): { opacity: number; scale: number } => {
+    if (!mousePos) return { opacity: tag.baseOpacity, scale: 1 };
     const dx = tag.x - mousePos.x;
     const dy = tag.y - mousePos.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    // Within ~25% radius, boost opacity up to 0.35
-    const proximity = Math.max(0, 1 - dist / 25);
-    return tag.baseOpacity + proximity * 0.3;
+    // Within ~30% radius, boost opacity and scale
+    const proximity = Math.max(0, 1 - dist / 30);
+    return {
+      opacity: tag.baseOpacity + proximity * 0.55,
+      scale: 1 + proximity * 0.35, // zoom in effect on hover proximity
+    };
   };
 
   return (
@@ -176,10 +177,10 @@ export const SemanticHeroBackground = () => {
       onMouseLeave={handleMouseLeave}
       aria-hidden="true"
     >
-      {/* Floating background queries — very faint, brighten near cursor */}
+      {/* Floating background queries — visible, zoom & brighten near cursor */}
       {floatingTags.map((tag) => {
-        const opacity = getTagOpacity(tag);
-        const isNearMouse = opacity > tag.baseOpacity + 0.05;
+        const { opacity, scale } = getTagStyle(tag);
+        const isNearMouse = opacity > tag.baseOpacity + 0.1;
         return (
           <span
             key={tag.id}
@@ -189,10 +190,12 @@ export const SemanticHeroBackground = () => {
               top: `${tag.y}%`,
               fontSize: `${tag.size}px`,
               opacity,
-              color: isNearMouse ? "hsl(203 80% 48%)" : "hsl(240 20% 70%)",
-              transform: "translate(-50%, -50%)",
+              color: isNearMouse ? "hsl(203 80% 48%)" : "hsl(240 15% 55%)",
+              transform: `translate(-50%, -50%) scale(${scale})`,
               letterSpacing: "0.02em",
-              transition: "opacity 0.5s ease, color 0.5s ease",
+              fontWeight: isNearMouse ? 600 : 400,
+              transition: "opacity 0.4s ease, color 0.4s ease, transform 0.4s ease, font-weight 0.4s ease",
+              textShadow: isNearMouse ? "0 0 12px hsl(203 80% 48% / 0.3)" : "none",
             }}
           >
             {tag.text}

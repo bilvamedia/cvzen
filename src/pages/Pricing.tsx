@@ -131,25 +131,25 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <nav className="sticky top-0 w-full z-50 border-b border-white/[0.08]" style={{ background: 'hsl(240 55% 16%)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logoHeader} alt="CVZen" className="h-8" />
+            <img src={logoHeader} alt="CVZen" className="h-10 w-auto" />
           </Link>
           <div className="flex items-center gap-3">
             {user ? (
-              <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+              <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10" onClick={() => navigate(-1)}>
                 <ArrowLeft className="h-4 w-4 mr-1" /> Back
               </Button>
             ) : (
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" asChild><Link to="/login">Sign In</Link></Button>
-                <Button size="sm" asChild><Link to="/signup">Get Started</Link></Button>
+                <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10" asChild><Link to="/login">Sign In</Link></Button>
+                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/85 font-semibold" asChild><Link to="/signup">Get Started</Link></Button>
               </div>
             )}
           </div>
         </div>
-      </header>
+      </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
         {/* Title */}

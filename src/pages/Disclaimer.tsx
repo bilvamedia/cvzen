@@ -7,13 +7,13 @@ const Disclaimer = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto flex items-center justify-between h-14 px-6">
+      <nav className="sticky top-0 z-50 border-b border-white/[0.08]" style={{ background: 'hsl(240 55% 16%)' }}>
+        <div className="container mx-auto flex items-center justify-between h-16 px-6">
           <Link to="/" className="flex items-center gap-2" aria-label="Back to home">
-            <ArrowLeft className="h-4 w-4 text-muted-foreground" />
-            <img src={logoHeader} alt="cvZen" className="h-7 w-auto" />
+            <ArrowLeft className="h-4 w-4 text-white/60" />
+            <img src={logoHeader} alt="cvZen" className="h-10 w-auto" />
           </Link>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-white/60">
             <AlertTriangle className="h-3.5 w-3.5 text-primary" />
             Disclaimer
           </div>

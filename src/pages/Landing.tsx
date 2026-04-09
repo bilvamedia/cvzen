@@ -367,11 +367,11 @@ const Landing = () => {
       </section>
 
       {/* ──────────── FOOTER ──────────── */}
-      <footer className="py-8 bg-card border-t border-border" role="contentinfo">
+      <footer className="py-8 border-t border-white/[0.08]" style={{ background: 'hsl(240 55% 16%)' }} role="contentinfo">
         <div className="container mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <img src={logoHeader} alt="cvZen" className="h-6 w-auto opacity-60" />
-            <span className="text-sm text-muted-foreground">© {new Date().getFullYear()} cvZen. All rights reserved.</span>
+            <img src={logoHeader} alt="cvZen" className="h-6 w-auto opacity-80" />
+            <span className="text-sm text-white/50">© {new Date().getFullYear()} cvZen. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-6">
             {[
@@ -383,7 +383,7 @@ const Landing = () => {
               <Link
                 key={link.label}
                 to={link.href}
-                className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 focus-ring rounded-sm"
+                className="text-xs font-medium text-white/50 hover:text-white transition-colors duration-200 focus-ring rounded-sm"
               >
                 {link.label}
               </Link>
