@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
   Search, Sparkles, MapPin, Building2, Briefcase, ChevronDown, ChevronUp,
