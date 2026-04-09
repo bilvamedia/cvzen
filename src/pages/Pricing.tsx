@@ -218,7 +218,7 @@ const Pricing = () => {
                 } bg-gradient-to-b ${PLAN_COLORS[i]} p-6 flex flex-col`}
               >
                 {plan.is_popular && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs px-3">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs px-3 border-0">
                     Most Popular
                   </Badge>
                 )}

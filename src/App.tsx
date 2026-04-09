@@ -25,6 +25,7 @@ import Disclaimer from "./pages/Disclaimer";
 import BrandGuidelines from "./pages/BrandGuidelines";
 import PublicProfile from "./pages/PublicProfile";
 import Unsubscribe from "./pages/Unsubscribe";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
