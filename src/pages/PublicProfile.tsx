@@ -434,233 +434,269 @@ const PublicProfile = () => {
 
   const socialLinks = Array.isArray(profile.social_links) ? profile.social_links : [];
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Header */}
-      <div className="bg-gradient-to-br from-primary to-accent text-white">
-        <div className="max-w-4xl mx-auto px-6 py-12 md:py-16">
-          <div className="flex items-center justify-between mb-8">
-            <Link to="/" className="inline-flex items-center text-white/70 hover:text-white text-sm transition-colors">
-              <ArrowLeft className="w-4 h-4 mr-1" /> Back to CVZen
-            </Link>
+  const socialLinks = Array.isArray(profile.social_links) ? profile.social_links : [];
 
-            {/* Recruiter logged-in indicator */}
+  return (
+    <div className="min-h-screen profile-dark relative overflow-x-hidden">
+      {/* Particle Background */}
+      <div className="profile-particle-bg" />
+
+      {/* Sticky top bar */}
+      <header className="sticky top-0 z-30 profile-glass border-b border-[hsl(240_10%_16%/0.6)]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 text-[hsl(220_10%_55%)] hover:text-[hsl(220_20%_92%)] text-sm transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            <img src={logoHeader} alt="CVZen" className="h-6 brightness-200" />
+          </Link>
+          <div className="flex items-center gap-2">
             {currentUser && isRecruiter && (
-              <span className="text-xs text-white/60 hidden sm:inline">
-                Signed in as <span className="text-white/90 font-medium">{currentUser.email}</span>
+              <span className="text-[10px] text-[hsl(220_10%_55%)] hidden sm:inline">
+                {currentUser.email}
               </span>
             )}
+            {/* Download CV */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[hsl(220_20%_92%)] bg-[hsl(240_15%_12%)] hover:bg-[hsl(240_12%_16%)] border border-[hsl(240_10%_20%)] transition-all">
+                  <Download className="h-3.5 w-3.5" /> CV
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-[hsl(240_15%_10%)] border-[hsl(240_10%_18%)] text-[hsl(220_20%_92%)]">
+                <DropdownMenuItem onClick={() => downloadCV("pdf")} className="hover:bg-[hsl(240_12%_16%)] focus:bg-[hsl(240_12%_16%)]">
+                  <FileText className="h-4 w-4 mr-2" /> PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => downloadCV("docx")} className="hover:bg-[hsl(240_12%_16%)] focus:bg-[hsl(240_12%_16%)]">
+                  <FileText className="h-4 w-4 mr-2" /> Word
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
+        </div>
+      </header>
 
-          <div className="flex flex-col md:flex-row items-start gap-6">
+      {/* Hero Section */}
+      <section className="relative z-10 pt-12 pb-8 sm:pt-16 sm:pb-12">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col items-center text-center">
+          {/* Glowing Avatar */}
+          <div className="profile-glow-ring w-28 h-28 sm:w-36 sm:h-36 rounded-full mb-6">
             {profile.avatar_url ? (
               <img
                 src={profile.avatar_url}
                 alt={profile.full_name || "Profile"}
-                className="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-4 border-white/20 shadow-lg"
+                className="w-full h-full rounded-full object-cover"
               />
             ) : (
-              <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-white/10 flex items-center justify-center text-3xl font-bold border-4 border-white/20">
+              <div className="w-full h-full rounded-full bg-[hsl(240_15%_12%)] flex items-center justify-center text-4xl sm:text-5xl font-bold text-[hsl(203_80%_48%)]">
                 {profile.full_name?.[0]?.toUpperCase() || "?"}
               </div>
             )}
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                {profile.full_name || "Unnamed Candidate"}
-              </h1>
-              {profile.headline && (
-                <p className="text-lg text-white/80 mt-2">{profile.headline}</p>
+          </div>
+
+          {/* Name */}
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight profile-gradient-text mb-2">
+            {profile.full_name || "Unnamed Candidate"}
+          </h1>
+
+          {/* Headline */}
+          {profile.headline && (
+            <p className="text-base sm:text-lg text-[hsl(220_10%_55%)] max-w-xl mt-1 leading-relaxed">
+              {profile.headline}
+            </p>
+          )}
+
+          {/* Social Links */}
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-5">
+            {profile.linkedin_url && (
+              <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[hsl(220_10%_55%)] bg-[hsl(240_15%_8%/0.6)] border border-[hsl(240_10%_16%)] hover:text-[hsl(203_80%_48%)] hover:border-[hsl(203_80%_48%/0.4)] transition-all">
+                <Linkedin className="w-3.5 h-3.5" /> LinkedIn
+              </a>
+            )}
+            {profile.website_url && (
+              <a href={profile.website_url} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[hsl(220_10%_55%)] bg-[hsl(240_15%_8%/0.6)] border border-[hsl(240_10%_16%)] hover:text-[hsl(203_80%_48%)] hover:border-[hsl(203_80%_48%/0.4)] transition-all">
+                <Globe className="w-3.5 h-3.5" /> Website
+              </a>
+            )}
+            {socialLinks.map((link: any, i: number) => (
+              <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[hsl(220_10%_55%)] bg-[hsl(240_15%_8%/0.6)] border border-[hsl(240_10%_16%)] hover:text-[hsl(203_80%_48%)] hover:border-[hsl(203_80%_48%/0.4)] transition-all">
+                <ExternalLink className="w-3.5 h-3.5" /> {link.platform || "Link"}
+              </a>
+            ))}
+          </div>
+
+          {/* Contact info - recruiter only */}
+          {contactInfo && isRecruiter && (
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-3 text-xs text-[hsl(203_80%_48%)]">
+              {contactInfo.email && (
+                <a href={`mailto:${contactInfo.email}`} className="flex items-center gap-1 hover:underline">
+                  <Mail className="w-3 h-3" />{contactInfo.email}
+                </a>
               )}
-              <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-white/60">
-                {profile.linkedin_url && (
-                  <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
-                    <Linkedin className="w-4 h-4" />LinkedIn
-                  </a>
-                )}
-                {profile.website_url && (
-                  <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
-                    <Globe className="w-4 h-4" />Website
-                  </a>
-                )}
-              </div>
-
-              {/* Contact info - visible only to logged-in recruiters */}
-              {contactInfo && isRecruiter && (
-                <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-white/70">
-                  {contactInfo.email && (
-                    <a href={`mailto:${contactInfo.email}`} className="flex items-center gap-1 hover:text-white transition-colors">
-                      <Mail className="w-3.5 h-3.5" />{contactInfo.email}
-                    </a>
-                  )}
-                  {contactInfo.phone && (
-                    <a href={`tel:${contactInfo.phone}`} className="flex items-center gap-1 hover:text-white transition-colors">
-                      <Phone className="w-3.5 h-3.5" />{contactInfo.phone}
-                    </a>
-                  )}
-                  {contactInfo.address && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5" />{contactInfo.address}
-                    </span>
-                  )}
-                </div>
+              {contactInfo.phone && (
+                <a href={`tel:${contactInfo.phone}`} className="flex items-center gap-1 hover:underline">
+                  <Phone className="w-3 h-3" />{contactInfo.phone}
+                </a>
               )}
-
-              {/* Action buttons row */}
-              <div className="flex flex-wrap items-center gap-2 mt-6">
-                {/* Like button */}
-                <button
-                  onClick={handleLike}
-                  disabled={hasLiked || liking}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                    hasLiked
-                      ? "bg-white/20 text-white cursor-default"
-                      : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 hover:border-white/30"
-                  }`}
-                >
-                  <ThumbsUp className={`h-4 w-4 transition-transform duration-300 ${hasLiked ? "fill-current scale-110" : ""}`} />
-                  <span>{likeCount}</span>
-                </button>
-
-                {/* Shortlist button */}
-                <button
-                  onClick={handleShortlist}
-                  disabled={shortlisting}
-                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                    isShortlisted
-                      ? "bg-green-500/20 text-green-100 border border-green-400/30"
-                      : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 hover:border-white/30"
-                  }`}
-                >
-                  {shortlisting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : isShortlisted ? (
-                    <BookmarkCheck className="h-4 w-4 fill-current" />
-                  ) : (
-                    <Bookmark className="h-4 w-4" />
-                  )}
-                  <span>{isShortlisted ? "Shortlisted" : "Shortlist"}</span>
-                </button>
-
-                {/* Download CV */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 hover:border-white/30 transition-all duration-300">
-                      <Download className="h-4 w-4" /> Download CV
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => downloadCV("pdf")}>
-                      <FileText className="h-4 w-4 mr-2" /> Download as PDF
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => downloadCV("docx")}>
-                      <FileText className="h-4 w-4 mr-2" /> Download as Word
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+              {contactInfo.address && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />{contactInfo.address}
+                </span>
+              )}
             </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 mt-7">
+            {/* Like */}
+            <button
+              onClick={handleLike}
+              disabled={hasLiked || liking}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                hasLiked
+                  ? "bg-[hsl(203_80%_48%/0.15)] text-[hsl(203_80%_55%)] border border-[hsl(203_80%_48%/0.3)]"
+                  : "bg-[hsl(240_15%_12%)] text-[hsl(220_10%_55%)] hover:text-[hsl(203_80%_55%)] border border-[hsl(240_10%_20%)] hover:border-[hsl(203_80%_48%/0.3)] hover:shadow-[0_0_20px_hsl(203_80%_48%/0.15)]"
+              }`}
+            >
+              <ThumbsUp className={`h-4 w-4 ${hasLiked ? "fill-current" : ""}`} />
+              <span>{likeCount}</span>
+            </button>
+
+            {/* Shortlist */}
+            <button
+              onClick={handleShortlist}
+              disabled={shortlisting}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                isShortlisted
+                  ? "bg-[hsl(140_50%_30%/0.2)] text-[hsl(140_60%_65%)] border border-[hsl(140_50%_40%/0.3)]"
+                  : "bg-[hsl(240_15%_12%)] text-[hsl(220_10%_55%)] hover:text-[hsl(220_20%_92%)] border border-[hsl(240_10%_20%)] hover:border-[hsl(240_10%_25%)]"
+              }`}
+            >
+              {shortlisting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isShortlisted ? (
+                <BookmarkCheck className="h-4 w-4 fill-current" />
+              ) : (
+                <Bookmark className="h-4 w-4" />
+              )}
+              <span>{isShortlisted ? "Shortlisted" : "Shortlist"}</span>
+            </button>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-10">
+      {/* Content Sections */}
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pb-16">
         {/* Bio */}
         {profile.bio && (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-primary" /> About
+          <div className="profile-section-enter profile-glass rounded-2xl p-6 sm:p-8 mb-6">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-[hsl(203_80%_48%)] mb-3 flex items-center gap-2">
+              <Briefcase className="w-4 h-4" /> About
             </h2>
-            <p className="text-muted-foreground leading-relaxed">{profile.bio}</p>
-          </div>
-        )}
-
-        {/* Social Links */}
-        {socialLinks.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-foreground mb-3">Links</h2>
-            <div className="flex flex-wrap gap-2">
-              {socialLinks.map((link: any, i: number) => (
-                <a key={i} href={link.url} target="_blank" rel="noopener noreferrer">
-                  <Badge variant="outline" className="gap-1 cursor-pointer hover:bg-accent transition-colors py-1.5 px-3">
-                    <ExternalLink className="w-3 h-3" />
-                    {link.platform || "Link"}
-                  </Badge>
-                </a>
-              ))}
-            </div>
+            <p className="text-[hsl(220_10%_65%)] leading-relaxed text-sm sm:text-base">{profile.bio}</p>
           </div>
         )}
 
         {/* Job Preferences */}
-        <JobPreferences profileId={profile.id} />
+        <div className="profile-section-enter mb-6" style={{ animationDelay: '0.1s' }}>
+          <JobPreferences profileId={profile.id} />
+        </div>
 
-        {/* CV Sections */}
+        {/* CV Sections - Timeline layout */}
         {sections.length > 0 && (
-          <>
-            <Separator className="my-8" />
-            {sections.map((section) => {
+          <div className="space-y-6">
+            {sections.map((section, sIdx) => {
               const displayContent = section.improved_content || section.content;
               const items = displayContent?.items || [];
               return (
-                <div key={section.id} className="mb-8">
-                  <h2 className="text-lg font-semibold text-foreground mb-4 uppercase tracking-wide border-b-2 border-primary pb-2">
-                    {section.section_title}
-                  </h2>
-                  <div className="space-y-4">
-                    {items.map((item: any, idx: number) => (
-                      <div key={idx} className="group">
-                        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
-                          <div>
-                            {item.title && (
-                              <h3 className="font-semibold text-foreground">
-                                {stripMarkdown(item.title)}
-                                {item.subtitle && <span className="font-normal text-muted-foreground"> — {stripMarkdown(item.subtitle)}</span>}
-                              </h3>
+                <div
+                  key={section.id}
+                  className="profile-section-enter profile-glass rounded-2xl overflow-hidden"
+                  style={{ animationDelay: `${0.15 + sIdx * 0.08}s` }}
+                >
+                  {/* Section Header */}
+                  <div className="px-6 py-4 border-b border-[hsl(240_10%_16%/0.6)] flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-[hsl(203_80%_48%/0.12)] flex items-center justify-center">
+                      <Briefcase className="h-4 w-4 text-[hsl(203_80%_48%)]" />
+                    </div>
+                    <h2 className="text-sm font-semibold uppercase tracking-widest text-[hsl(220_20%_92%)]">
+                      {section.section_title}
+                    </h2>
+                    <span className="ml-auto text-[10px] text-[hsl(220_10%_45%)] font-medium">
+                      {items.length} item{items.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+
+                  {/* Timeline Items */}
+                  <div className="px-6 py-4">
+                    <div className="ml-7 border-l-2 border-[hsl(203_80%_48%/0.15)] space-y-6">
+                      {items.map((item: any, idx: number) => (
+                        <div key={idx} className="profile-timeline-dot pl-6 relative">
+                          <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 mb-1">
+                            <div>
+                              {item.title && (
+                                <h3 className="font-semibold text-[hsl(220_20%_92%)] text-sm sm:text-base">
+                                  {stripMarkdown(item.title)}
+                                  {item.subtitle && (
+                                    <span className="font-normal text-[hsl(220_10%_55%)]"> — {stripMarkdown(item.subtitle)}</span>
+                                  )}
+                                </h3>
+                              )}
+                            </div>
+                            {(item.date_range || item.location) && (
+                              <span className="text-[11px] text-[hsl(220_10%_45%)] shrink-0">
+                                {[item.date_range, item.location].filter(Boolean).join(" · ")}
+                              </span>
                             )}
                           </div>
-                          {(item.date_range || item.location) && (
-                            <span className="text-sm text-muted-foreground mt-0.5 sm:mt-0">
-                              {[item.date_range, item.location].filter(Boolean).join(" · ")}
-                            </span>
+
+                          {item.description && (
+                            <p className="text-sm text-[hsl(220_10%_55%)] mt-1 leading-relaxed">{stripMarkdown(item.description)}</p>
+                          )}
+
+                          {item.details?.length > 0 && (
+                            <ul className="mt-2 space-y-1">
+                              {item.details.map((d: string, di: number) => (
+                                <li key={di} className="text-sm text-[hsl(220_10%_55%)] flex gap-2">
+                                  <span className="text-[hsl(203_80%_48%)] mt-0.5 shrink-0">▸</span>
+                                  <span>{stripMarkdown(d)}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+
+                          {item.tags?.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-3">
+                              {item.tags.map((tag: string, ti: number) => (
+                                <span
+                                  key={ti}
+                                  className="text-[10px] px-2 py-0.5 rounded-md bg-[hsl(203_80%_48%/0.1)] text-[hsl(203_80%_60%)] border border-[hsl(203_80%_48%/0.15)] font-medium"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
                           )}
                         </div>
-                         {item.description && (
-                          <p className="text-sm text-muted-foreground mt-1">{stripMarkdown(item.description)}</p>
-                        )}
-                        {item.details?.length > 0 && (
-                          <ul className="list-disc list-inside mt-2 text-sm text-muted-foreground space-y-1 ml-1">
-                            {item.details.map((d: string, di: number) => (
-                              <li key={di}>{stripMarkdown(d)}</li>
-                            ))}
-                          </ul>
-                        )}
-                        {item.tags?.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-2">
-                            {item.tags.map((tag: string, ti: number) => (
-                              <Badge key={ti} variant="secondary" className="text-xs">{tag}</Badge>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
               );
             })}
-          </>
+          </div>
         )}
 
         {sections.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
+          <div className="text-center py-16 text-[hsl(220_10%_45%)]">
             <p>This candidate hasn't added any CV sections yet.</p>
           </div>
         )}
 
         {/* Footer */}
-        <Separator className="my-8" />
-        <div className="text-center text-sm text-muted-foreground py-4">
-          Powered by <Link to="/" className="text-primary hover:underline font-medium">CVZen.ai</Link>
+        <div className="mt-12 text-center text-xs text-[hsl(220_10%_35%)] py-6 border-t border-[hsl(240_10%_12%)]">
+          Powered by <Link to="/" className="text-[hsl(203_80%_48%)] hover:underline font-medium">CVZen.ai</Link>
         </div>
       </div>
 
@@ -675,26 +711,26 @@ const PublicProfile = () => {
 
       {/* Auth Modal */}
       <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-[hsl(240_15%_8%)] border-[hsl(240_10%_16%)] text-[hsl(220_20%_92%)]">
           <div className="flex flex-col items-center pt-2 pb-1">
-            <img src={logoHeader} alt="cvZen" className="h-10" />
-            <p className="text-[10px] font-medium mt-1.5 tracking-[0.25em] uppercase text-muted-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <img src={logoHeader} alt="cvZen" className="h-10 brightness-200" />
+            <p className="text-[10px] font-medium mt-1.5 tracking-[0.25em] uppercase text-[hsl(220_10%_45%)]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Intelligent Hiring OS
             </p>
           </div>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-sm text-[hsl(220_10%_55%)] text-center">
             Sign in or create a recruiter account to shortlist this candidate.
           </p>
           <Tabs value={authTab} onValueChange={setAuthTab} className="mt-2">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 bg-[hsl(240_15%_12%)]">
+              <TabsTrigger value="signin" className="data-[state=active]:bg-[hsl(203_80%_48%/0.15)] data-[state=active]:text-[hsl(203_80%_55%)]">Sign In</TabsTrigger>
+              <TabsTrigger value="signup" className="data-[state=active]:bg-[hsl(203_80%_48%/0.15)] data-[state=active]:text-[hsl(203_80%_55%)]">Sign Up</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
               <form onSubmit={handleAuthSubmit} className="space-y-4 mt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-email" className="text-[hsl(220_10%_55%)]">Email</Label>
                   <Input
                     id="signin-email"
                     type="email"
@@ -702,10 +738,11 @@ const PublicProfile = () => {
                     value={authEmail}
                     onChange={e => setAuthEmail(e.target.value)}
                     placeholder="you@company.com"
+                    className="bg-[hsl(240_15%_10%)] border-[hsl(240_10%_18%)] text-[hsl(220_20%_92%)] placeholder:text-[hsl(220_10%_35%)]"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
+                  <Label htmlFor="signin-password" className="text-[hsl(220_10%_55%)]">Password</Label>
                   <Input
                     id="signin-password"
                     type="password"
@@ -713,10 +750,11 @@ const PublicProfile = () => {
                     value={authPassword}
                     onChange={e => setAuthPassword(e.target.value)}
                     placeholder="••••••••"
+                    className="bg-[hsl(240_15%_10%)] border-[hsl(240_10%_18%)] text-[hsl(220_20%_92%)] placeholder:text-[hsl(220_10%_35%)]"
                   />
                 </div>
-                {authError && <p className="text-sm text-destructive">{authError}</p>}
-                <Button type="submit" className="w-full" disabled={authLoading}>
+                {authError && <p className="text-sm text-red-400">{authError}</p>}
+                <Button type="submit" className="w-full bg-[hsl(203_80%_48%)] hover:bg-[hsl(203_80%_42%)] text-white" disabled={authLoading}>
                   {authLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Sign In
                 </Button>
@@ -726,7 +764,7 @@ const PublicProfile = () => {
             <TabsContent value="signup">
               <form onSubmit={handleAuthSubmit} className="space-y-4 mt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Full Name</Label>
+                  <Label htmlFor="signup-name" className="text-[hsl(220_10%_55%)]">Full Name</Label>
                   <Input
                     id="signup-name"
                     type="text"
@@ -734,10 +772,11 @@ const PublicProfile = () => {
                     value={authName}
                     onChange={e => setAuthName(e.target.value)}
                     placeholder="Jane Smith"
+                    className="bg-[hsl(240_15%_10%)] border-[hsl(240_10%_18%)] text-[hsl(220_20%_92%)] placeholder:text-[hsl(220_10%_35%)]"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Work Email</Label>
+                  <Label htmlFor="signup-email" className="text-[hsl(220_10%_55%)]">Work Email</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -745,10 +784,11 @@ const PublicProfile = () => {
                     value={authEmail}
                     onChange={e => setAuthEmail(e.target.value)}
                     placeholder="you@company.com"
+                    className="bg-[hsl(240_15%_10%)] border-[hsl(240_10%_18%)] text-[hsl(220_20%_92%)] placeholder:text-[hsl(220_10%_35%)]"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password" className="text-[hsl(220_10%_55%)]">Password</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -757,15 +797,16 @@ const PublicProfile = () => {
                     value={authPassword}
                     onChange={e => setAuthPassword(e.target.value)}
                     placeholder="Min 6 characters"
+                    className="bg-[hsl(240_15%_10%)] border-[hsl(240_10%_18%)] text-[hsl(220_20%_92%)] placeholder:text-[hsl(220_10%_35%)]"
                   />
                 </div>
-                {authError && <p className="text-sm text-destructive">{authError}</p>}
-                <Button type="submit" className="w-full" disabled={authLoading}>
+                {authError && <p className="text-sm text-red-400">{authError}</p>}
+                <Button type="submit" className="w-full bg-[hsl(203_80%_48%)] hover:bg-[hsl(203_80%_42%)] text-white" disabled={authLoading}>
                   {authLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Create Recruiter Account
                 </Button>
-                <p className="text-xs text-muted-foreground text-center">
-                  By signing up you agree to our <Link to="/terms" className="underline">Terms</Link> & <Link to="/privacy" className="underline">Privacy Policy</Link>.
+                <p className="text-xs text-[hsl(220_10%_40%)] text-center">
+                  By signing up you agree to our <Link to="/terms" className="underline text-[hsl(203_80%_48%)]">Terms</Link> & <Link to="/privacy" className="underline text-[hsl(203_80%_48%)]">Privacy Policy</Link>.
                 </p>
               </form>
             </TabsContent>
