@@ -261,6 +261,50 @@ export type Database = {
           },
         ]
       }
+      job_applications: {
+        Row: {
+          candidate_id: string
+          cover_letter: string | null
+          created_at: string
+          id: string
+          job_id: string
+          match_score: number | null
+          optimized_resume_snapshot: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_id: string
+          cover_letter?: string | null
+          created_at?: string
+          id?: string
+          job_id: string
+          match_score?: number | null
+          optimized_resume_snapshot?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_id?: string
+          cover_letter?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          match_score?: number | null
+          optimized_resume_snapshot?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           company: string
