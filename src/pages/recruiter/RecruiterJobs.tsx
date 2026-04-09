@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, Search, PlusCircle, Calendar, Briefcase, MapPin, Clock, Trash2, MoreVertical, Inbox } from "lucide-react";
+import { PlusCircle, Briefcase, MapPin, Clock, Trash2, MoreVertical, ExternalLink, Copy, Check, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { recruiterNavItems as navItems } from "@/lib/navItems";
 
 interface Job {
@@ -18,11 +18,14 @@ interface Job {
   status: string;
   created_at: string;
   skills: any;
+  job_slug: string | null;
+  work_mode: string;
 }
 
 const RecruiterJobs = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchJobs = async () => {
@@ -30,10 +33,10 @@ const RecruiterJobs = () => {
     if (!user) return;
     const { data, error } = await supabase
       .from("jobs")
-      .select("id, title, company, location, employment_type, status, created_at, skills")
+      .select("id, title, company, location, employment_type, status, created_at, skills, job_slug, work_mode")
       .eq("recruiter_id", user.id)
       .order("created_at", { ascending: false });
-    if (!error && data) setJobs(data);
+    if (!error && data) setJobs(data as Job[]);
     setLoading(false);
   };
 
@@ -52,8 +55,31 @@ const RecruiterJobs = () => {
     toast({ title: "Job deleted" });
   };
 
+  const copyLink = async (slug: string, id: string) => {
+    const url = `${window.location.origin}/jobs/${slug}`;
+    await navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+    toast({ title: "Link copied!" });
+  };
+
+  const shareJob = (slug: string, title: string, company: string, platform: string) => {
+    const url = `${window.location.origin}/jobs/${slug}`;
+    const text = `We're hiring! ${title} at ${company}. Apply now:`;
+    const urls: Record<string, string> = {
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(text + " " + url)}`,
+    };
+    window.open(urls[platform], "_blank", "noopener,noreferrer,width=600,height=400");
+  };
+
   const typeLabels: Record<string, string> = {
     full_time: "Full-time", part_time: "Part-time", contract: "Contract", internship: "Internship",
+  };
+
+  const modeLabels: Record<string, string> = {
+    onsite: "In-Office", remote: "Remote", hybrid: "Hybrid",
   };
 
   return (
@@ -87,6 +113,7 @@ const RecruiterJobs = () => {
                       <Badge variant={job.status === "active" ? "default" : "secondary"} className="text-[10px]">
                         {job.status}
                       </Badge>
+                      <Badge variant="outline" className="text-[10px]">{modeLabels[job.work_mode] || job.work_mode}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">{job.company}</p>
                     <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
@@ -101,12 +128,38 @@ const RecruiterJobs = () => {
                         ))}
                       </div>
                     )}
+                    {/* Public link */}
+                    {job.job_slug && job.status === "active" && (
+                      <div className="flex items-center gap-2 mt-3">
+                        <a href={`/jobs/${job.job_slug}`} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1">
+                          <ExternalLink className="h-3 w-3" /> View public page
+                        </a>
+                        <button onClick={() => copyLink(job.job_slug!, job.id)} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+                          {copiedId === job.id ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
+                          {copiedId === job.id ? "Copied" : "Copy link"}
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      {job.job_slug && (
+                        <>
+                          <DropdownMenuItem onClick={() => window.open(`/jobs/${job.job_slug}`, "_blank")}>
+                            <ExternalLink className="h-3.5 w-3.5 mr-2" /> View Public Page
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => copyLink(job.job_slug!, job.id)}>
+                            <Copy className="h-3.5 w-3.5 mr-2" /> Copy Link
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => shareJob(job.job_slug!, job.title, job.company, "linkedin")}>
+                            <Share2 className="h-3.5 w-3.5 mr-2" /> Share on LinkedIn
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
                       <DropdownMenuItem onClick={() => toggleStatus(job.id, job.status)}>
                         {job.status === "active" ? "Close Job" : "Reopen Job"}
                       </DropdownMenuItem>

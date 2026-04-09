@@ -308,12 +308,14 @@ export type Database = {
       jobs: {
         Row: {
           company: string
+          company_website: string | null
           created_at: string
           description: string
           description_embedding: string | null
           employment_type: string
           experience_level: string | null
           id: string
+          job_slug: string | null
           location: string | null
           recruiter_id: string
           salary_currency: string | null
@@ -323,15 +325,18 @@ export type Database = {
           status: string
           title: string
           updated_at: string
+          work_mode: string
         }
         Insert: {
           company: string
+          company_website?: string | null
           created_at?: string
           description: string
           description_embedding?: string | null
           employment_type?: string
           experience_level?: string | null
           id?: string
+          job_slug?: string | null
           location?: string | null
           recruiter_id: string
           salary_currency?: string | null
@@ -341,15 +346,18 @@ export type Database = {
           status?: string
           title: string
           updated_at?: string
+          work_mode?: string
         }
         Update: {
           company?: string
+          company_website?: string | null
           created_at?: string
           description?: string
           description_embedding?: string | null
           employment_type?: string
           experience_level?: string | null
           id?: string
+          job_slug?: string | null
           location?: string | null
           recruiter_id?: string
           salary_currency?: string | null
@@ -359,6 +367,7 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+          work_mode?: string
         }
         Relationships: []
       }
@@ -829,6 +838,26 @@ export type Database = {
           address: string
           email: string
           phone: string
+        }[]
+      }
+      get_public_job_by_slug: {
+        Args: { _slug: string }
+        Returns: {
+          company: string
+          company_website: string
+          created_at: string
+          description: string
+          employment_type: string
+          experience_level: string
+          id: string
+          job_slug: string
+          location: string
+          salary_currency: string
+          salary_max: number
+          salary_min: number
+          skills: Json
+          title: string
+          work_mode: string
         }[]
       }
       get_public_profile_by_slug: {
