@@ -7,11 +7,10 @@ const corsHeaders = {
 };
 
 /**
- * Generates vector embeddings for resume sections.
- * Uses Gemini to produce a rich keyword expansion, then creates a
- * deterministic embedding via a hash-based approach for vector similarity.
+ * Generates vector embeddings for resume sections OR job descriptions.
  * 
- * Input: { sectionIds: string[], column: "content" | "improved_content" }
+ * Resume mode:  { sectionIds: string[], column: "content" | "improved_content" }
+ * Job mode:     { jobIds: string[] }
  */
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -46,10 +45,57 @@ serve(async (req) => {
       });
     }
 
-    const { sectionIds, column } = await req.json();
+    const body = await req.json();
+    const { sectionIds, column, jobIds } = body;
 
+    // ── Job embedding mode ──
+    if (jobIds && Array.isArray(jobIds) && jobIds.length > 0) {
+      const { data: jobs, error: fetchError } = await supabase
+        .from("jobs")
+        .select("id, title, company, description, location, skills, employment_type, experience_level, work_mode")
+        .in("id", jobIds)
+        .eq("recruiter_id", user.id);
+
+      if (fetchError || !jobs || jobs.length === 0) {
+        return new Response(JSON.stringify({ error: "Jobs not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      let updated = 0;
+      for (const job of jobs) {
+        const text = jobToText(job);
+        if (!text) continue;
+
+        try {
+          const enrichedText = await enrichTextWithAI(text, "job_description", LOVABLE_API_KEY);
+          const embedding = generateDeterministicEmbedding(enrichedText, 768);
+          const vectorStr = `[${embedding.join(",")}]`;
+
+          const { error: updateError } = await supabase
+            .from("jobs")
+            .update({ description_embedding: vectorStr })
+            .eq("id", job.id);
+
+          if (updateError) {
+            console.error("Update error for job", job.id, updateError);
+          } else {
+            updated++;
+          }
+        } catch (err) {
+          console.error("Embedding error for job", job.id, err);
+        }
+      }
+
+      console.log(`Embedded ${updated}/${jobs.length} jobs`);
+      return new Response(JSON.stringify({ success: true, embedded: updated, total: jobs.length }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── Resume section embedding mode ──
     if (!sectionIds || !Array.isArray(sectionIds) || sectionIds.length === 0) {
-      return new Response(JSON.stringify({ error: "sectionIds array is required" }), {
+      return new Response(JSON.stringify({ error: "sectionIds or jobIds array is required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -59,7 +105,6 @@ serve(async (req) => {
       });
     }
 
-    // Fetch sections
     const { data: sections, error: fetchError } = await supabase
       .from("resume_sections")
       .select("id, section_title, section_type, content, improved_content")
@@ -83,10 +128,7 @@ serve(async (req) => {
       if (!text) continue;
 
       try {
-        // Generate semantic keywords via AI for richer embedding
         const enrichedText = await enrichTextWithAI(text, section.section_type, LOVABLE_API_KEY);
-        
-        // Generate deterministic embedding from enriched text
         const embedding = generateDeterministicEmbedding(enrichedText, 768);
         const vectorStr = `[${embedding.join(",")}]`;
 
@@ -120,6 +162,18 @@ serve(async (req) => {
   }
 });
 
+/** Convert job data to searchable text */
+function jobToText(job: any): string {
+  const parts = [job.title, job.company];
+  if (job.location) parts.push(job.location);
+  if (job.work_mode) parts.push(job.work_mode);
+  if (job.employment_type) parts.push(job.employment_type);
+  if (job.experience_level) parts.push(job.experience_level);
+  if (job.description) parts.push(job.description.substring(0, 4000));
+  if (Array.isArray(job.skills)) parts.push(job.skills.join(" "));
+  return parts.join(" ").trim();
+}
+
 /** Convert section JSONB content to searchable text */
 function sectionToText(title: string, data: any): string {
   const items = data?.items || [];
@@ -140,6 +194,10 @@ function sectionToText(title: string, data: any): string {
 /** Use AI to expand text with semantic keywords for better matching */
 async function enrichTextWithAI(text: string, sectionType: string, apiKey: string): Promise<string> {
   try {
+    const systemPrompt = sectionType === "job_description"
+      ? `You are a job description keyword expander. Given a job posting, output the original text PLUS related industry keywords, synonyms, required skill categories, and role variants. Keep output under 500 words. Output plain text only, no formatting.`
+      : `You are a resume keyword expander. Given a resume section, output the original text PLUS related industry keywords, synonyms, and skill categories. Keep output under 500 words. Output plain text only, no formatting.`;
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -149,14 +207,8 @@ async function enrichTextWithAI(text: string, sectionType: string, apiKey: strin
       body: JSON.stringify({
         model: "google/gemini-2.5-flash-lite",
         messages: [
-          {
-            role: "system",
-            content: `You are a resume keyword expander. Given a resume section, output the original text PLUS related industry keywords, synonyms, and skill categories. Keep output under 500 words. Output plain text only, no formatting.`
-          },
-          {
-            role: "user",
-            content: `Section type: ${sectionType}\n\n${text.substring(0, 3000)}`
-          }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Section type: ${sectionType}\n\n${text.substring(0, 3000)}` }
         ],
         temperature: 0,
         max_tokens: 600,
@@ -179,31 +231,25 @@ async function enrichTextWithAI(text: string, sectionType: string, apiKey: strin
 
 /**
  * Generate a deterministic 768-dim embedding from text using a hash-based approach.
- * This creates consistent vectors where similar texts produce similar vectors
- * through character n-gram hashing with TF-IDF-like weighting.
  */
 function generateDeterministicEmbedding(text: string, dimensions: number): number[] {
   const normalized = text.toLowerCase().replace(/[^\w\s]/g, " ").replace(/\s+/g, " ").trim();
   const words = normalized.split(" ");
   const embedding = new Float64Array(dimensions);
 
-  // Word-level features with position encoding
   for (let i = 0; i < words.length; i++) {
     const word = words[i];
-    const posWeight = 1.0 / (1.0 + Math.log(1 + i)); // Position decay
+    const posWeight = 1.0 / (1.0 + Math.log(1 + i));
 
-    // Unigram hash
     const h1 = hashString(word);
     embedding[Math.abs(h1) % dimensions] += posWeight * (h1 > 0 ? 1 : -1);
 
-    // Bigram hash (word pairs)
     if (i < words.length - 1) {
       const bigram = word + " " + words[i + 1];
       const h2 = hashString(bigram);
       embedding[Math.abs(h2) % dimensions] += posWeight * 0.7 * (h2 > 0 ? 1 : -1);
     }
 
-    // Trigram hash (character-level for partial matching)
     for (let j = 0; j <= word.length - 3; j++) {
       const tri = word.substring(j, j + 3);
       const h3 = hashString(tri);
@@ -211,7 +257,6 @@ function generateDeterministicEmbedding(text: string, dimensions: number): numbe
     }
   }
 
-  // L2 normalize
   let norm = 0;
   for (let i = 0; i < dimensions; i++) norm += embedding[i] * embedding[i];
   norm = Math.sqrt(norm);
@@ -229,5 +274,5 @@ function hashString(str: string): number {
     hash ^= str.charCodeAt(i);
     hash = Math.imul(hash, 16777619);
   }
-  return hash | 0; // Convert to 32-bit int
+  return hash | 0;
 }

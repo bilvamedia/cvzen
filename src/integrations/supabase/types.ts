@@ -909,6 +909,31 @@ export type Database = {
           read_ct: number
         }[]
       }
+      search_jobs_semantic: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          company: string
+          company_website: string
+          created_at: string
+          description: string
+          employment_type: string
+          experience_level: string
+          id: string
+          job_slug: string
+          location: string
+          salary_currency: string
+          salary_max: number
+          salary_min: number
+          similarity: number
+          skills: Json
+          title: string
+          work_mode: string
+        }[]
+      }
       search_resume_sections: {
         Args: {
           filter_section_type?: string
