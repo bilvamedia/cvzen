@@ -145,9 +145,18 @@ const JobSearch = () => {
     init();
   }, []);
 
-  // Auto-search external jobs on mount if candidate has skills
+  // Auto-search external jobs when tab is switched to external
   useEffect(() => {
-    if (candidateSkills.length > 0 && !searchedExternal) {
+    if (activeTab === "external" && !searchedExternal && !autoFetchedRef.current && candidateSkills.length > 0) {
+      autoFetchedRef.current = true;
+      handleExternalSearch(candidateSkills.slice(0, 5).join(", "));
+    }
+  }, [activeTab, candidateSkills, searchedExternal]);
+
+  // Also trigger when skills load and tab is already external
+  useEffect(() => {
+    if (candidateSkills.length > 0 && activeTab === "external" && !searchedExternal && !autoFetchedRef.current) {
+      autoFetchedRef.current = true;
       handleExternalSearch(candidateSkills.slice(0, 5).join(", "));
     }
   }, [candidateSkills]);
