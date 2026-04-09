@@ -24,6 +24,7 @@ import Terms from "./pages/Terms";
 import Disclaimer from "./pages/Disclaimer";
 import BrandGuidelines from "./pages/BrandGuidelines";
 import PublicProfile from "./pages/PublicProfile";
+import PublicJob from "./pages/PublicJob";
 import Unsubscribe from "./pages/Unsubscribe";
 import Pricing from "./pages/Pricing";
 import SubscriptionManagement from "./pages/SubscriptionManagement";
@@ -66,6 +67,7 @@ const App = () => (
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/brand" element={<BrandGuidelines />} />
           <Route path="/profile/:slug" element={<PublicProfile />} />
+          <Route path="/jobs/:slug" element={<PublicJob />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="*" element={<NotFound />} />
