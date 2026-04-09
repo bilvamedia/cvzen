@@ -319,6 +319,7 @@ export type Database = {
           job_functions: string[]
           languages: string[]
           notice_period: string | null
+          preferences_embedding: string | null
           preferred_locations: string[]
           salary_currency: string | null
           seniority_level: string | null
@@ -344,6 +345,7 @@ export type Database = {
           job_functions?: string[]
           languages?: string[]
           notice_period?: string | null
+          preferences_embedding?: string | null
           preferred_locations?: string[]
           salary_currency?: string | null
           seniority_level?: string | null
@@ -369,6 +371,7 @@ export type Database = {
           job_functions?: string[]
           languages?: string[]
           notice_period?: string | null
+          preferences_embedding?: string | null
           preferred_locations?: string[]
           salary_currency?: string | null
           seniority_level?: string | null
@@ -1009,6 +1012,27 @@ export type Database = {
           message: Json
           msg_id: number
           read_ct: number
+        }[]
+      }
+      search_job_preferences: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          employment_types: string[]
+          expected_salary_max: number
+          expected_salary_min: number
+          industries: string[]
+          job_functions: string[]
+          preferred_locations: string[]
+          salary_currency: string
+          seniority_level: string
+          similarity: number
+          tools_technologies: string[]
+          user_id: string
+          work_modes: string[]
         }[]
       }
       search_jobs_semantic: {

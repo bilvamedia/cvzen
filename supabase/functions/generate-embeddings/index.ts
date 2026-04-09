@@ -7,10 +7,11 @@ const corsHeaders = {
 };
 
 /**
- * Generates vector embeddings for resume sections OR job descriptions.
+ * Generates vector embeddings for resume sections, job descriptions, OR job preferences.
  * 
- * Resume mode:  { sectionIds: string[], column: "content" | "improved_content" }
- * Job mode:     { jobIds: string[] }
+ * Resume mode:       { sectionIds: string[], column: "content" | "improved_content" }
+ * Job mode:          { jobIds: string[] }
+ * Preferences mode:  { preferencesUserId: string }
  */
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -46,7 +47,63 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { sectionIds, column, jobIds } = body;
+    const { sectionIds, column, jobIds, preferencesUserId } = body;
+
+    // ── Job Preferences embedding mode ──
+    if (preferencesUserId) {
+      if (preferencesUserId !== user.id) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: prefRow, error: prefError } = await supabase
+        .from("job_preferences")
+        .select("*")
+        .eq("user_id", preferencesUserId)
+        .maybeSingle();
+
+      if (prefError || !prefRow) {
+        return new Response(JSON.stringify({ error: "Preferences not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const text = preferencesToText(prefRow);
+      if (!text) {
+        return new Response(JSON.stringify({ success: true, embedded: 0, total: 1 }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      try {
+        const enrichedText = await enrichTextWithAI(text, "job_preferences", LOVABLE_API_KEY);
+        const embedding = generateDeterministicEmbedding(enrichedText, 768);
+        const vectorStr = `[${embedding.join(",")}]`;
+
+        const { error: updateError } = await supabase
+          .from("job_preferences")
+          .update({ preferences_embedding: vectorStr })
+          .eq("user_id", preferencesUserId);
+
+        if (updateError) {
+          console.error("Update error for preferences:", updateError);
+          return new Response(JSON.stringify({ success: false, error: "Failed to save embedding" }), {
+            status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        console.log("Embedded job preferences for user:", preferencesUserId);
+        return new Response(JSON.stringify({ success: true, embedded: 1, total: 1 }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (err) {
+        console.error("Embedding error for preferences:", err);
+        return new Response(JSON.stringify({ error: "Embedding generation failed" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // ── Job embedding mode ──
     if (jobIds && Array.isArray(jobIds) && jobIds.length > 0) {
@@ -95,7 +152,7 @@ serve(async (req) => {
 
     // ── Resume section embedding mode ──
     if (!sectionIds || !Array.isArray(sectionIds) || sectionIds.length === 0) {
-      return new Response(JSON.stringify({ error: "sectionIds or jobIds array is required" }), {
+      return new Response(JSON.stringify({ error: "sectionIds, jobIds, or preferencesUserId is required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -162,6 +219,33 @@ serve(async (req) => {
   }
 });
 
+/** Convert job preferences to searchable text */
+function preferencesToText(pref: any): string {
+  const parts: string[] = [];
+  if (pref.seniority_level) parts.push(`Seniority: ${pref.seniority_level}`);
+  if (pref.work_modes?.length) parts.push(`Work modes: ${pref.work_modes.join(", ")}`);
+  if (pref.employment_types?.length) parts.push(`Employment types: ${pref.employment_types.join(", ")}`);
+  if (pref.preferred_locations?.length) parts.push(`Preferred locations: ${pref.preferred_locations.join(", ")}`);
+  if (pref.job_functions?.length) parts.push(`Job functions: ${pref.job_functions.join(", ")}`);
+  if (pref.industries?.length) parts.push(`Industries: ${pref.industries.join(", ")}`);
+  if (pref.tools_technologies?.length) parts.push(`Tools & Technologies: ${pref.tools_technologies.join(", ")}`);
+  if (pref.company_sizes?.length) parts.push(`Company sizes: ${pref.company_sizes.join(", ")}`);
+  if (pref.languages?.length) parts.push(`Languages: ${pref.languages.join(", ")}`);
+  if (pref.shift_preference) parts.push(`Shift: ${pref.shift_preference}`);
+  if (pref.notice_period) parts.push(`Notice period: ${pref.notice_period}`);
+  if (pref.travel_willingness) parts.push(`Travel: ${pref.travel_willingness}`);
+  if (pref.expected_salary_min || pref.expected_salary_max) {
+    const cur = pref.salary_currency || "USD";
+    const min = pref.expected_salary_min ? `${cur} ${pref.expected_salary_min}` : "";
+    const max = pref.expected_salary_max ? `${cur} ${pref.expected_salary_max}` : "";
+    parts.push(`Salary: ${min}${min && max ? " - " : ""}${max}`);
+  }
+  if (pref.benefits_priorities?.length) parts.push(`Benefits priorities: ${pref.benefits_priorities.join(", ")}`);
+  if (pref.willing_to_relocate) parts.push("Willing to relocate");
+  if (pref.visa_sponsorship_needed) parts.push("Needs visa sponsorship");
+  return parts.join(". ");
+}
+
 /** Convert job data to searchable text */
 function jobToText(job: any): string {
   const parts = [job.title, job.company];
@@ -194,9 +278,14 @@ function sectionToText(title: string, data: any): string {
 /** Use AI to expand text with semantic keywords for better matching */
 async function enrichTextWithAI(text: string, sectionType: string, apiKey: string): Promise<string> {
   try {
-    const systemPrompt = sectionType === "job_description"
-      ? `You are a job description keyword expander. Given a job posting, output the original text PLUS related industry keywords, synonyms, required skill categories, and role variants. Keep output under 500 words. Output plain text only, no formatting.`
-      : `You are a resume keyword expander. Given a resume section, output the original text PLUS related industry keywords, synonyms, and skill categories. Keep output under 500 words. Output plain text only, no formatting.`;
+    let systemPrompt: string;
+    if (sectionType === "job_description") {
+      systemPrompt = `You are a job description keyword expander. Given a job posting, output the original text PLUS related industry keywords, synonyms, required skill categories, and role variants. Keep output under 500 words. Output plain text only, no formatting.`;
+    } else if (sectionType === "job_preferences") {
+      systemPrompt = `You are a job preferences keyword expander. Given a candidate's job preferences, output the original text PLUS related industry keywords, role synonyms, skill categories, company type keywords, and location variants. This helps match candidates to relevant jobs. Keep output under 500 words. Output plain text only, no formatting.`;
+    } else {
+      systemPrompt = `You are a resume keyword expander. Given a resume section, output the original text PLUS related industry keywords, synonyms, and skill categories. Keep output under 500 words. Output plain text only, no formatting.`;
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
