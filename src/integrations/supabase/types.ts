@@ -362,6 +362,137 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_gateway_config: {
+        Row: {
+          config: Json | null
+          created_at: string
+          display_name: string
+          gateway_name: string
+          id: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          display_name: string
+          gateway_name: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          display_name?: string
+          gateway_name?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          gateway_name: string
+          gateway_order_id: string | null
+          gateway_transaction_id: string | null
+          id: string
+          metadata: Json | null
+          status: string
+          subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          gateway_name: string
+          gateway_order_id?: string | null
+          gateway_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          gateway_name?: string
+          gateway_order_id?: string | null
+          gateway_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          created_at: string
+          currency: string
+          display_order: number
+          features: Json
+          id: string
+          is_popular: boolean
+          limits: Json
+          name: string
+          price_monthly: number
+          price_yearly: number
+          slug: string
+          target_role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          display_order?: number
+          features?: Json
+          id?: string
+          is_popular?: boolean
+          limits?: Json
+          name: string
+          price_monthly?: number
+          price_yearly?: number
+          slug: string
+          target_role: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          display_order?: number
+          features?: Json
+          id?: string
+          is_popular?: boolean
+          limits?: Json
+          name?: string
+          price_monthly?: number
+          price_yearly?: number
+          slug?: string
+          target_role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profile_likes: {
         Row: {
           created_at: string
@@ -550,6 +681,56 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          billing_cycle: string
+          created_at: string
+          current_period_end: string
+          current_period_start: string
+          gateway_name: string | null
+          gateway_subscription_id: string | null
+          id: string
+          plan_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_cycle?: string
+          created_at?: string
+          current_period_end: string
+          current_period_start?: string
+          gateway_name?: string | null
+          gateway_subscription_id?: string | null
+          id?: string
+          plan_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_cycle?: string
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          gateway_name?: string | null
+          gateway_subscription_id?: string | null
+          id?: string
+          plan_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -571,6 +752,39 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string
+        }
+        Relationships: []
+      }
+      usage_tracking: {
+        Row: {
+          created_at: string
+          feature_key: string
+          id: string
+          period_end: string
+          period_start: string
+          updated_at: string
+          usage_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feature_key: string
+          id?: string
+          period_end: string
+          period_start: string
+          updated_at?: string
+          usage_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          feature_key?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          updated_at?: string
+          usage_count?: number
+          user_id?: string
         }
         Relationships: []
       }
