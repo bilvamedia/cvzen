@@ -1,6 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, FileText, Search, PlusCircle, Calendar, Sparkles, Loader2, X, Inbox } from "lucide-react";
+import { Sparkles, Loader2, X, Copy, Check, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,8 @@ import { recruiterNavItems as navItems } from "@/lib/navItems";
 const PostJob = () => {
   const [title, setTitle] = useState("");
   const [company, setCompany] = useState("");
+  const [companyWebsite, setCompanyWebsite] = useState("");
+  const [workMode, setWorkMode] = useState("onsite");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [employmentType, setEmploymentType] = useState("full_time");
@@ -25,6 +27,8 @@ const PostJob = () => {
   const [skills, setSkills] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -64,25 +68,101 @@ const PostJob = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase.from("jobs").insert({
+      const { data, error } = await supabase.from("jobs").insert({
         recruiter_id: user.id,
         title, company, location, description,
         employment_type: employmentType,
         experience_level: experienceLevel || null,
         salary_min: salaryMin ? parseInt(salaryMin) : null,
         salary_max: salaryMax ? parseInt(salaryMax) : null,
+        salary_currency: "INR",
         skills,
+        company_website: companyWebsite || null,
+        work_mode: workMode,
         status: "active",
-      });
+      } as any).select("job_slug").single();
       if (error) throw error;
-      toast({ title: "Job published!", description: "Your job listing is now live and searchable." });
-      navigate("/recruiter/jobs");
+      setPublishedSlug(data?.job_slug);
+      toast({ title: "Job published!", description: "Your job listing is now live." });
     } catch (err: any) {
       toast({ title: "Failed to post job", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
+
+  const jobUrl = publishedSlug ? `${window.location.origin}/jobs/${publishedSlug}` : "";
+
+  const copyLink = async () => {
+    await navigator.clipboard.writeText(jobUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast({ title: "Link copied!" });
+  };
+
+  if (publishedSlug) {
+    return (
+      <DashboardLayout navItems={navItems} role="recruiter">
+        <div className="max-w-lg mx-auto text-center py-12">
+          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+            <Check className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Job Published!</h1>
+          <p className="text-muted-foreground mb-6">Your job listing is live and ready to share.</p>
+
+          <div className="bg-card border border-border rounded-xl p-5 mb-6 text-left">
+            <Label className="text-xs text-muted-foreground mb-2 block">Public Job Link</Label>
+            <div className="flex items-center gap-2">
+              <Input value={jobUrl} readOnly className="enterprise-border text-sm" />
+              <Button variant="outline" size="icon" onClick={copyLink}>
+                {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
+              </Button>
+              <a href={jobUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" size="icon"><ExternalLink className="h-4 w-4" /></Button>
+              </a>
+            </div>
+
+            <div className="mt-4">
+              <Label className="text-xs text-muted-foreground mb-2 block">Share on</Label>
+              <div className="flex gap-2">
+                {[
+                  { key: "linkedin", label: "LinkedIn", color: "bg-[#0A66C2]" },
+                  { key: "twitter", label: "𝕏 Twitter", color: "bg-foreground" },
+                  { key: "whatsapp", label: "WhatsApp", color: "bg-[#25D366]" },
+                ].map((p) => (
+                  <Button
+                    key={p.key}
+                    size="sm"
+                    className={`${p.color} text-white hover:opacity-90 text-xs`}
+                    onClick={() => {
+                      const text = `We're hiring! ${title} at ${company}. Apply now:`;
+                      const urls: Record<string, string> = {
+                        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(jobUrl)}`,
+                        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(jobUrl)}`,
+                        whatsapp: `https://wa.me/?text=${encodeURIComponent(text + " " + jobUrl)}`,
+                      };
+                      window.open(urls[p.key], "_blank", "noopener,noreferrer,width=600,height=400");
+                    }}
+                  >
+                    {p.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-center">
+            <Button variant="outline" onClick={() => { setPublishedSlug(null); setTitle(""); setCompany(""); setDescription(""); setSkills([]); setCompanyWebsite(""); }}>
+              Post Another Job
+            </Button>
+            <Button variant="hero" onClick={() => navigate("/recruiter/jobs")}>
+              View My Jobs
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout navItems={navItems} role="recruiter">
@@ -104,8 +184,26 @@ const PostJob = () => {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
+              <Label>Company Website</Label>
+              <Input placeholder="https://acme.com" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} className="enterprise-border" />
+            </div>
+            <div className="space-y-2">
+              <Label>Work Mode</Label>
+              <Select value={workMode} onValueChange={setWorkMode}>
+                <SelectTrigger className="enterprise-border"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="onsite">In-Office</SelectItem>
+                  <SelectItem value="remote">Remote</SelectItem>
+                  <SelectItem value="hybrid">Hybrid</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label>Location</Label>
-              <Input placeholder="Remote / San Francisco, CA" value={location} onChange={(e) => setLocation(e.target.value)} className="enterprise-border" />
+              <Input placeholder="San Francisco, CA" value={location} onChange={(e) => setLocation(e.target.value)} className="enterprise-border" />
             </div>
             <div className="space-y-2">
               <Label>Employment Type</Label>
