@@ -37,10 +37,10 @@ serve(async (req) => {
       });
     }
 
-    // Fetch job details
+    // Fetch job details including recruiter_id
     const { data: job, error: jobError } = await supabase
       .from("jobs")
-      .select("title, company, description, skills, experience_level, location")
+      .select("title, company, description, skills, experience_level, location, recruiter_id")
       .eq("id", jobId)
       .single();
 
@@ -49,6 +49,18 @@ serve(async (req) => {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Fetch recruiter/hiring manager name
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    const { data: recruiterProfile } = await serviceClient
+      .from("profiles")
+      .select("full_name")
+      .eq("id", job.recruiter_id)
+      .single();
+    const hiringManagerName = recruiterProfile?.full_name || "Hiring Manager";
 
     // Fetch candidate profile
     const { data: profile } = await supabase
