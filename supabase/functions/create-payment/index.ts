@@ -4,6 +4,23 @@ import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+// PhonePe API endpoints
+const PHONEPE_SANDBOX_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay";
+const PHONEPE_PROD_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
+const USE_SANDBOX = true; // Toggle for production
+
+async function sha256Hex(message: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function base64Encode(obj: Record<string, unknown>): string {
+  return btoa(JSON.stringify(obj));
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -36,7 +53,7 @@ Deno.serve(async (req) => {
     const { plan_id, billing_cycle, amount, currency, gateway } = body;
 
     if (!plan_id || !billing_cycle || !amount || !gateway) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
+      return new Response(JSON.stringify({ error: "Missing required fields: plan_id, billing_cycle, amount, gateway" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -80,7 +97,7 @@ Deno.serve(async (req) => {
       periodEnd.setMonth(periodEnd.getMonth() + 1);
     }
 
-    // Create subscription (pending)
+    // Create subscription
     const { data: subscription, error: subError } = await supabase
       .from("subscriptions")
       .insert({
@@ -102,8 +119,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create payment transaction
-    const orderId = `ORD_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    // Create unique merchant transaction ID
+    const merchantTransactionId = `CVZ_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+    // Create payment transaction record
     const { data: transaction, error: txnError } = await supabase
       .from("payment_transactions")
       .insert({
@@ -112,7 +131,7 @@ Deno.serve(async (req) => {
         amount,
         currency: currency || "INR",
         gateway_name: gateway,
-        gateway_order_id: orderId,
+        gateway_order_id: merchantTransactionId,
         status: "pending",
         metadata: { plan_name: plan.name, billing_cycle },
       })
@@ -126,59 +145,121 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Gateway-specific payment initiation
-    let paymentResponse: Record<string, any> = {};
-
+    // ─── PhonePe Payment ───
     if (gateway === "phonepe") {
-      // PhonePe integration - requires PHONEPE_MERCHANT_ID and PHONEPE_SALT_KEY secrets
       const merchantId = Deno.env.get("PHONEPE_MERCHANT_ID");
       const saltKey = Deno.env.get("PHONEPE_SALT_KEY");
+      const saltIndex = Deno.env.get("PHONEPE_SALT_INDEX") || "1";
 
       if (!merchantId || !saltKey) {
-        paymentResponse = {
-          order_id: orderId,
-          transaction_id: transaction.id,
-          message: "PhonePe payment gateway credentials not configured. Please contact admin.",
-          gateway: "phonepe",
-        };
-      } else {
-        // In production, create PhonePe payment request here
-        paymentResponse = {
-          order_id: orderId,
-          transaction_id: transaction.id,
-          gateway: "phonepe",
-          message: "Payment initiated via PhonePe",
-        };
+        return new Response(JSON.stringify({ error: "PhonePe credentials not configured" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
-    } else if (gateway === "razorpay") {
-      const keyId = Deno.env.get("RAZORPAY_KEY_ID");
-      if (!keyId) {
-        paymentResponse = {
-          order_id: orderId,
-          transaction_id: transaction.id,
-          message: "Razorpay credentials not configured.",
-          gateway: "razorpay",
-        };
-      } else {
-        paymentResponse = {
-          order_id: orderId,
-          transaction_id: transaction.id,
-          gateway: "razorpay",
-        };
-      }
-    } else if (gateway === "stripe") {
-      paymentResponse = {
-        order_id: orderId,
-        transaction_id: transaction.id,
-        gateway: "stripe",
-        message: "Stripe integration pending.",
+
+      // Build redirect URL
+      const redirectUrl = `${req.headers.get("origin") || "https://cvzen.lovable.app"}/pricing?payment_status=success&txn_id=${merchantTransactionId}`;
+      const callbackUrl = `${supabaseUrl}/functions/v1/phonepe-callback`;
+
+      // PhonePe v1 payload (amount in paisa)
+      const payload = {
+        merchantId,
+        merchantTransactionId,
+        merchantUserId: user.id.replace(/-/g, "").slice(0, 36),
+        amount: Math.round(amount * 100), // Convert to paisa
+        redirectUrl,
+        redirectMode: "REDIRECT",
+        callbackUrl,
+        paymentInstrument: {
+          type: "PAY_PAGE",
+        },
       };
+
+      const base64Payload = base64Encode(payload);
+      const apiEndpoint = "/pg/v1/pay";
+      const stringToHash = base64Payload + apiEndpoint + saltKey;
+      const sha256Hash = await sha256Hex(stringToHash);
+      const xVerify = sha256Hash + "###" + saltIndex;
+
+      const phonepeUrl = USE_SANDBOX ? PHONEPE_SANDBOX_URL : PHONEPE_PROD_URL;
+
+      const phonepeResponse = await fetch(phonepeUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-VERIFY": xVerify,
+        },
+        body: JSON.stringify({ request: base64Payload }),
+      });
+
+      const phonepeData = await phonepeResponse.json();
+
+      if (phonepeData.success && phonepeData.data?.instrumentResponse?.redirectInfo?.url) {
+        // Update transaction with PhonePe order ID
+        await supabase
+          .from("payment_transactions")
+          .update({
+            gateway_transaction_id: phonepeData.data.merchantTransactionId,
+            status: "processing",
+          })
+          .eq("id", transaction.id);
+
+        return new Response(JSON.stringify({
+          payment_url: phonepeData.data.instrumentResponse.redirectInfo.url,
+          order_id: merchantTransactionId,
+          transaction_id: transaction.id,
+          gateway: "phonepe",
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } else {
+        // Payment initiation failed
+        await supabase
+          .from("payment_transactions")
+          .update({ status: "failed", metadata: { ...transaction.metadata, phonepe_error: phonepeData } })
+          .eq("id", transaction.id);
+
+        return new Response(JSON.stringify({
+          error: "PhonePe payment initiation failed",
+          details: phonepeData.message || phonepeData.code || "Unknown error",
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
-    return new Response(JSON.stringify(paymentResponse), {
+    // ─── Razorpay (placeholder) ───
+    if (gateway === "razorpay") {
+      return new Response(JSON.stringify({
+        order_id: merchantTransactionId,
+        transaction_id: transaction.id,
+        gateway: "razorpay",
+        message: "Razorpay integration coming soon",
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ─── Stripe (placeholder) ───
+    if (gateway === "stripe") {
+      return new Response(JSON.stringify({
+        order_id: merchantTransactionId,
+        transaction_id: transaction.id,
+        gateway: "stripe",
+        message: "Stripe integration coming soon",
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "Unsupported gateway" }), {
+      status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
+    console.error("Payment error:", err);
     return new Response(JSON.stringify({ error: err.message || "Internal error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
