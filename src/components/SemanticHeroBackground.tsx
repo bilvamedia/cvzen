@@ -223,8 +223,7 @@ export const SemanticHeroBackground = () => {
     >
       {/* Floating background queries — visible, zoom & brighten near cursor */}
       {floatingTags.map((tag) => {
-        const { opacity, scale } = getTagStyle(tag);
-        const isNearMouse = opacity > tag.baseOpacity + 0.1;
+        const { opacity, scale, highlighted } = getTagStyle(tag);
         return (
           <span
             key={tag.id}
@@ -234,12 +233,12 @@ export const SemanticHeroBackground = () => {
               top: `${tag.y}%`,
               fontSize: `${tag.size}px`,
               opacity,
-              color: isNearMouse ? "hsl(203 80% 48%)" : "hsl(240 15% 55%)",
+              color: highlighted ? "hsl(203 80% 48%)" : "hsl(240 15% 55%)",
               transform: `translate(-50%, -50%) scale(${scale})`,
               letterSpacing: "0.02em",
-              fontWeight: isNearMouse ? 600 : 400,
-              transition: "opacity 0.4s ease, color 0.4s ease, transform 0.4s ease, font-weight 0.4s ease",
-              textShadow: isNearMouse ? "0 0 12px hsl(203 80% 48% / 0.3)" : "none",
+              fontWeight: highlighted ? 600 : 400,
+              transition: "opacity 0.6s ease, color 0.6s ease, transform 0.6s ease, font-weight 0.6s ease, text-shadow 0.6s ease",
+              textShadow: highlighted ? "0 0 12px hsl(203 80% 48% / 0.3)" : "none",
             }}
           >
             {tag.text}
