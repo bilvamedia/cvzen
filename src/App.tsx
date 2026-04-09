@@ -27,6 +27,9 @@ import PublicProfile from "./pages/PublicProfile";
 import Unsubscribe from "./pages/Unsubscribe";
 import Pricing from "./pages/Pricing";
 import SubscriptionManagement from "./pages/SubscriptionManagement";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +43,8 @@ const App = () => (
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/candidate" element={<CandidateDashboard />} />
           <Route path="/candidate/resume" element={<ResumeUpload />} />
           <Route path="/candidate/profile" element={<CandidateProfile />} />
@@ -47,6 +52,7 @@ const App = () => (
           <Route path="/candidate/search" element={<JobSearch />} />
           <Route path="/candidate/interviews" element={<CandidateInterviews />} />
           <Route path="/candidate/billing" element={<SubscriptionManagement role="candidate" />} />
+          <Route path="/candidate/settings" element={<Settings role="candidate" />} />
           <Route path="/recruiter" element={<RecruiterDashboard />} />
           <Route path="/recruiter/post-job" element={<PostJob />} />
           <Route path="/recruiter/jobs" element={<RecruiterJobs />} />
@@ -54,6 +60,7 @@ const App = () => (
           <Route path="/recruiter/applications" element={<Applications />} />
           <Route path="/recruiter/interviews" element={<InterviewScheduling />} />
           <Route path="/recruiter/billing" element={<SubscriptionManagement role="recruiter" />} />
+          <Route path="/recruiter/settings" element={<Settings role="recruiter" />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/disclaimer" element={<Disclaimer />} />

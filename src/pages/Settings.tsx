@@ -129,7 +129,7 @@ const Settings = ({ role }: SettingsProps) => {
 
   if (loading) {
     return (
-      <DashboardLayout title="Settings" navItems={navItems} role={role}>
+      <DashboardLayout navItems={navItems} role={role}>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
         </div>
@@ -138,7 +138,7 @@ const Settings = ({ role }: SettingsProps) => {
   }
 
   return (
-    <DashboardLayout title="Settings" navItems={navItems} role={role}>
+    <DashboardLayout navItems={navItems} role={role}>
       <div className="max-w-2xl space-y-8">
         {/* Profile Section */}
         <div className="bg-card border border-border rounded-xl p-6">
