@@ -305,6 +305,45 @@ export type Database = {
           },
         ]
       }
+      job_preferences: {
+        Row: {
+          created_at: string
+          employment_types: string[]
+          id: string
+          interview_availability: Json
+          preferred_locations: string[]
+          seniority_level: string | null
+          shift_preference: string | null
+          updated_at: string
+          user_id: string
+          work_modes: string[]
+        }
+        Insert: {
+          created_at?: string
+          employment_types?: string[]
+          id?: string
+          interview_availability?: Json
+          preferred_locations?: string[]
+          seniority_level?: string | null
+          shift_preference?: string | null
+          updated_at?: string
+          user_id: string
+          work_modes?: string[]
+        }
+        Update: {
+          created_at?: string
+          employment_types?: string[]
+          id?: string
+          interview_availability?: Json
+          preferred_locations?: string[]
+          seniority_level?: string | null
+          shift_preference?: string | null
+          updated_at?: string
+          user_id?: string
+          work_modes?: string[]
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           company: string
@@ -858,6 +897,17 @@ export type Database = {
           skills: Json
           title: string
           work_mode: string
+        }[]
+      }
+      get_public_job_preferences: {
+        Args: { _profile_id: string }
+        Returns: {
+          employment_types: string[]
+          interview_availability: Json
+          preferred_locations: string[]
+          seniority_level: string
+          shift_preference: string
+          work_modes: string[]
         }[]
       }
       get_public_profile_by_slug: {
