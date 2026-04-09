@@ -43,6 +43,7 @@ interface FloatingTag {
   baseOpacity: number;
   size: number;
   delay: number;
+  autoHighlight: number; // 0-1 intensity of auto-highlight
 }
 
 interface CursorTag {
