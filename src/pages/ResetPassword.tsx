@@ -78,8 +78,8 @@ const ResetPassword = () => {
 
         {success ? (
           <div className="text-center space-y-4">
-            <div className="h-14 w-14 rounded-full bg-green-500/10 flex items-center justify-center mx-auto">
-              <CheckCircle className="h-7 w-7 text-green-500" />
+            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <CheckCircle className="h-7 w-7 text-primary" />
             </div>
             <h1 className="text-2xl font-bold text-foreground">Password updated!</h1>
             <p className="text-muted-foreground text-sm">Redirecting you to sign in...</p>
