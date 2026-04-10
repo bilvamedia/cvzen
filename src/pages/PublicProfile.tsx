@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp, Bookmark, BookmarkCheck, X, LogIn, Mail, Phone, MapPin } from "lucide-react";
+import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp, Bookmark, BookmarkCheck, X, LogIn, Mail, Phone, MapPin, ChevronDown, ChevronUp } from "lucide-react";
 import logoHeader from "@/assets/logo-header.svg";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +61,15 @@ const PublicProfile = () => {
   const [likeCount, setLikeCount] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
   const [liking, setLiking] = useState(false);
+
+  // Expandable sections state
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [bioExpanded, setBioExpanded] = useState(false);
+  const [prefsExpanded, setPrefsExpanded] = useState(false);
+
+  const toggleSection = (id: string) => {
+    setExpandedSections(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   // Auth & shortlist state
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -588,19 +597,50 @@ const PublicProfile = () => {
 
       {/* Content Sections */}
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pb-16">
-        {/* Bio */}
+        {/* Bio - collapsible */}
         {profile.bio && (
           <div className="profile-section-enter profile-glass rounded-2xl p-6 sm:p-8 mb-6">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-[hsl(203_80%_48%)] mb-3 flex items-center gap-2">
-              <Briefcase className="w-4 h-4" /> About
-            </h2>
-            <p className="text-[hsl(220_10%_65%)] leading-relaxed text-sm sm:text-base">{profile.bio}</p>
+            <button
+              onClick={() => setBioExpanded(!bioExpanded)}
+              className="w-full flex items-center justify-between mb-3"
+            >
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-[hsl(203_80%_48%)] flex items-center gap-2">
+                <Briefcase className="w-4 h-4" /> About
+              </h2>
+              <ChevronDown className={`w-4 h-4 text-[hsl(220_10%_45%)] transition-transform duration-300 ${bioExpanded ? "rotate-180" : ""}`} />
+            </button>
+            <div className="relative">
+              <p className={`text-[hsl(220_10%_65%)] leading-relaxed text-sm sm:text-base ${!bioExpanded ? "line-clamp-3" : ""}`}>
+                {profile.bio}
+              </p>
+              {!bioExpanded && profile.bio.length > 200 && (
+                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[hsl(240_15%_6%)] to-transparent" />
+              )}
+            </div>
           </div>
         )}
 
-        {/* Job Preferences */}
+        {/* Job Preferences - collapsible */}
         <div className="profile-section-enter mb-6" style={{ animationDelay: '0.1s' }}>
-          <JobPreferences profileId={profile.id} />
+          <div className="profile-glass rounded-2xl overflow-hidden">
+            <button
+              onClick={() => setPrefsExpanded(!prefsExpanded)}
+              className="w-full px-6 py-4 flex items-center justify-between"
+            >
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-[hsl(220_20%_92%)] flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-[hsl(203_80%_48%/0.12)] flex items-center justify-center">
+                  <Briefcase className="h-4 w-4 text-[hsl(203_80%_48%)]" />
+                </div>
+                Job Preferences
+              </h2>
+              <ChevronDown className={`w-4 h-4 text-[hsl(220_10%_45%)] transition-transform duration-300 ${prefsExpanded ? "rotate-180" : ""}`} />
+            </button>
+            <div className={`transition-all duration-300 overflow-hidden ${prefsExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}>
+              <div className="px-6 pb-6">
+                <JobPreferences profileId={profile.id} />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* CV Sections - Timeline layout */}
@@ -609,29 +649,40 @@ const PublicProfile = () => {
             {sections.map((section, sIdx) => {
               const displayContent = section.improved_content || section.content;
               const items = displayContent?.items || [];
+              const isExpanded = !!expandedSections[section.id];
+              const PREVIEW_COUNT = 2;
+              const hasMore = items.length > PREVIEW_COUNT;
+              const visibleItems = isExpanded ? items : items.slice(0, PREVIEW_COUNT);
+
               return (
                 <div
                   key={section.id}
                   className="profile-section-enter profile-glass rounded-2xl overflow-hidden"
                   style={{ animationDelay: `${0.15 + sIdx * 0.08}s` }}
                 >
-                  {/* Section Header */}
-                  <div className="px-6 py-4 border-b border-[hsl(240_10%_16%/0.6)] flex items-center gap-3">
+                  {/* Section Header - clickable */}
+                  <button
+                    onClick={() => toggleSection(section.id)}
+                    className="w-full px-6 py-4 border-b border-[hsl(240_10%_16%/0.6)] flex items-center gap-3"
+                  >
                     <div className="h-8 w-8 rounded-lg bg-[hsl(203_80%_48%/0.12)] flex items-center justify-center">
                       <Briefcase className="h-4 w-4 text-[hsl(203_80%_48%)]" />
                     </div>
                     <h2 className="text-sm font-semibold uppercase tracking-widest text-[hsl(220_20%_92%)]">
                       {section.section_title}
                     </h2>
-                    <span className="ml-auto text-[10px] text-[hsl(220_10%_45%)] font-medium">
-                      {items.length} item{items.length !== 1 ? "s" : ""}
+                    <span className="ml-auto flex items-center gap-2">
+                      <span className="text-[10px] text-[hsl(220_10%_45%)] font-medium">
+                        {items.length} item{items.length !== 1 ? "s" : ""}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 text-[hsl(220_10%_45%)] transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
                     </span>
-                  </div>
+                  </button>
 
                   {/* Timeline Items */}
                   <div className="px-6 py-4">
                     <div className="ml-7 border-l-2 border-[hsl(203_80%_48%/0.15)] space-y-6">
-                      {items.map((item: any, idx: number) => (
+                      {visibleItems.map((item: any, idx: number) => (
                         <div key={idx} className="profile-timeline-dot pl-6 relative">
                           <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 mb-1">
                             <div>
@@ -681,6 +732,26 @@ const PublicProfile = () => {
                         </div>
                       ))}
                     </div>
+
+                    {/* Show more/less toggle */}
+                    {hasMore && (
+                      <button
+                        onClick={() => toggleSection(section.id)}
+                        className="mt-4 ml-7 flex items-center gap-1.5 text-xs font-medium text-[hsl(203_80%_48%)] hover:text-[hsl(203_80%_60%)] transition-colors"
+                      >
+                        {isExpanded ? (
+                          <>
+                            <ChevronUp className="w-3.5 h-3.5" />
+                            Show less
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-3.5 h-3.5" />
+                            Show {items.length - PREVIEW_COUNT} more
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
