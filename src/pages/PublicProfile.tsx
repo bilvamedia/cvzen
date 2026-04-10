@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp, Bookmark, BookmarkCheck, X, LogIn, Mail, Phone, MapPin } from "lucide-react";
+import { Loader2, Globe, Linkedin, ExternalLink, Briefcase, ArrowLeft, Download, FileText, ThumbsUp, Bookmark, BookmarkCheck, X, LogIn, Mail, Phone, MapPin, ChevronDown, ChevronUp } from "lucide-react";
 import logoHeader from "@/assets/logo-header.svg";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
