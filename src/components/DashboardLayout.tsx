@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Menu, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import logoHeader from "@/assets/logo-header.svg";
+import ZenAIAgent from "@/components/ZenAIAgent";
 
 interface NavItem {
   label: string;
@@ -101,6 +102,7 @@ const DashboardLayout = ({ children, navItems, role }: DashboardLayoutProps) => 
         </header>
         <main className="p-4 sm:p-6">{children}</main>
       </div>
+      <ZenAIAgent role={role} />
     </div>
   );
 };
