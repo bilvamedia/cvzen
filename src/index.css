@@ -211,8 +211,7 @@
     border-color: hsl(240 10% 25%);
     color: hsl(220 20% 85%);
   }
-
-
+  .profile-glow-ring {
     position: relative;
   }
   .profile-glow-ring::before {
