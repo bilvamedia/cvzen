@@ -180,7 +180,39 @@
     border: 1px solid hsl(240 10% 16% / 0.8);
   }
 
-  .profile-glow-ring {
+  /* Dark theme overrides for JobPreferences inside public profile */
+  .public-profile-prefs .bg-card {
+    background: hsl(240 15% 8% / 0.6);
+    border-color: hsl(240 10% 16% / 0.8);
+    color: hsl(220 20% 88%);
+  }
+  .public-profile-prefs .text-foreground {
+    color: hsl(220 20% 92%);
+  }
+  .public-profile-prefs .text-muted-foreground {
+    color: hsl(220 10% 55%);
+  }
+  .public-profile-prefs .border-border {
+    border-color: hsl(240 10% 20%);
+  }
+  .public-profile-prefs [class*="shadow-card"] {
+    box-shadow: none;
+  }
+  .public-profile-prefs .bg-card,
+  .public-profile-prefs > div {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+  }
+  .public-profile-prefs .badge,
+  .public-profile-prefs [data-slot="badge"] {
+    border-color: hsl(240 10% 25%);
+    color: hsl(220 20% 85%);
+  }
+
+
     position: relative;
   }
   .profile-glow-ring::before {

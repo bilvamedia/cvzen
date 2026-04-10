@@ -455,7 +455,7 @@ const PublicProfile = () => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-[hsl(220_10%_55%)] hover:text-[hsl(220_20%_92%)] text-sm transition-colors">
             <ArrowLeft className="w-4 h-4" />
-            <img src={logoHeader} alt="CVZen" className="h-6 brightness-200" />
+            <img src={logoHeader} alt="CVZen" className="h-6" />
           </Link>
           <div className="flex items-center gap-2">
             {currentUser && isRecruiter && (
@@ -636,7 +636,7 @@ const PublicProfile = () => {
               <ChevronDown className={`w-4 h-4 text-[hsl(220_10%_45%)] transition-transform duration-300 ${prefsExpanded ? "rotate-180" : ""}`} />
             </button>
             <div className={`transition-all duration-300 overflow-hidden ${prefsExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}>
-              <div className="px-6 pb-6">
+              <div className="px-6 pb-6 public-profile-prefs">
                 <JobPreferences profileId={profile.id} />
               </div>
             </div>
@@ -784,7 +784,7 @@ const PublicProfile = () => {
       <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
         <DialogContent className="sm:max-w-md bg-[hsl(240_15%_8%)] border-[hsl(240_10%_16%)] text-[hsl(220_20%_92%)]">
           <div className="flex flex-col items-center pt-2 pb-1">
-            <img src={logoHeader} alt="cvZen" className="h-10 brightness-200" />
+            <img src={logoHeader} alt="cvZen" className="h-10" />
             <p className="text-[10px] font-medium mt-1.5 tracking-[0.25em] uppercase text-[hsl(220_10%_45%)]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Intelligent Hiring OS
             </p>
