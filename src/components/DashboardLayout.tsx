@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Menu, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import logoHeader from "@/assets/logo-header.svg";
+import ZenAIAgent from "@/components/ZenAIAgent";
 
 interface NavItem {
   label: string;
