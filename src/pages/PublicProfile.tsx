@@ -62,6 +62,15 @@ const PublicProfile = () => {
   const [hasLiked, setHasLiked] = useState(false);
   const [liking, setLiking] = useState(false);
 
+  // Expandable sections state
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [bioExpanded, setBioExpanded] = useState(false);
+  const [prefsExpanded, setPrefsExpanded] = useState(false);
+
+  const toggleSection = (id: string) => {
+    setExpandedSections(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   // Auth & shortlist state
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [contactInfo, setContactInfo] = useState<{ email: string | null; phone: string | null; address: string | null } | null>(null);
