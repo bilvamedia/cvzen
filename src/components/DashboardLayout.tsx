@@ -102,6 +102,7 @@ const DashboardLayout = ({ children, navItems, role }: DashboardLayoutProps) => 
         </header>
         <main className="p-4 sm:p-6">{children}</main>
       </div>
+      <ZenAIAgent role={role} />
     </div>
   );
 };
