@@ -649,29 +649,40 @@ const PublicProfile = () => {
             {sections.map((section, sIdx) => {
               const displayContent = section.improved_content || section.content;
               const items = displayContent?.items || [];
+              const isExpanded = !!expandedSections[section.id];
+              const PREVIEW_COUNT = 2;
+              const hasMore = items.length > PREVIEW_COUNT;
+              const visibleItems = isExpanded ? items : items.slice(0, PREVIEW_COUNT);
+
               return (
                 <div
                   key={section.id}
                   className="profile-section-enter profile-glass rounded-2xl overflow-hidden"
                   style={{ animationDelay: `${0.15 + sIdx * 0.08}s` }}
                 >
-                  {/* Section Header */}
-                  <div className="px-6 py-4 border-b border-[hsl(240_10%_16%/0.6)] flex items-center gap-3">
+                  {/* Section Header - clickable */}
+                  <button
+                    onClick={() => toggleSection(section.id)}
+                    className="w-full px-6 py-4 border-b border-[hsl(240_10%_16%/0.6)] flex items-center gap-3"
+                  >
                     <div className="h-8 w-8 rounded-lg bg-[hsl(203_80%_48%/0.12)] flex items-center justify-center">
                       <Briefcase className="h-4 w-4 text-[hsl(203_80%_48%)]" />
                     </div>
                     <h2 className="text-sm font-semibold uppercase tracking-widest text-[hsl(220_20%_92%)]">
                       {section.section_title}
                     </h2>
-                    <span className="ml-auto text-[10px] text-[hsl(220_10%_45%)] font-medium">
-                      {items.length} item{items.length !== 1 ? "s" : ""}
+                    <span className="ml-auto flex items-center gap-2">
+                      <span className="text-[10px] text-[hsl(220_10%_45%)] font-medium">
+                        {items.length} item{items.length !== 1 ? "s" : ""}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 text-[hsl(220_10%_45%)] transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
                     </span>
-                  </div>
+                  </button>
 
                   {/* Timeline Items */}
                   <div className="px-6 py-4">
                     <div className="ml-7 border-l-2 border-[hsl(203_80%_48%/0.15)] space-y-6">
-                      {items.map((item: any, idx: number) => (
+                      {visibleItems.map((item: any, idx: number) => (
                         <div key={idx} className="profile-timeline-dot pl-6 relative">
                           <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 mb-1">
                             <div>
@@ -721,6 +732,26 @@ const PublicProfile = () => {
                         </div>
                       ))}
                     </div>
+
+                    {/* Show more/less toggle */}
+                    {hasMore && (
+                      <button
+                        onClick={() => toggleSection(section.id)}
+                        className="mt-4 ml-7 flex items-center gap-1.5 text-xs font-medium text-[hsl(203_80%_48%)] hover:text-[hsl(203_80%_60%)] transition-colors"
+                      >
+                        {isExpanded ? (
+                          <>
+                            <ChevronUp className="w-3.5 h-3.5" />
+                            Show less
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-3.5 h-3.5" />
+                            Show {items.length - PREVIEW_COUNT} more
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
