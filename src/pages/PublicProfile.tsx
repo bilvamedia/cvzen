@@ -255,7 +255,12 @@ const PublicProfile = () => {
   };
 
   useEffect(() => {
-    if (slug) loadPublicProfile(slug);
+    if (slug) {
+      loadPublicProfile(slug);
+    } else {
+      setNotFound(true);
+      setLoading(false);
+    }
   }, [slug]);
 
   const loadLikes = useCallback(async (profileId: string) => {
