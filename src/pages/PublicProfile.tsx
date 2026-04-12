@@ -86,41 +86,44 @@ const PublicProfile = () => {
   const [authError, setAuthError] = useState("");
 
   // Check auth state on mount
+  // Helper to check recruiter role without blocking auth callbacks
+  const checkRecruiterRole = useCallback(async (userId: string) => {
+    try {
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "recruiter")
+        .maybeSingle();
+      setIsRecruiter(!!roleData);
+    } catch {
+      setIsRecruiter(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const user = session?.user ?? null;
       setCurrentUser(user);
       if (user) {
-        // Check if recruiter
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("role", "recruiter")
-          .maybeSingle();
-        setIsRecruiter(!!roleData);
+        // Fire and forget — never await inside onAuthStateChange
+        checkRecruiterRole(user.id);
         setShowAuthModal(false);
       } else {
         setIsRecruiter(false);
       }
     });
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       const user = session?.user ?? null;
       setCurrentUser(user);
       if (user) {
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("role", "recruiter")
-          .maybeSingle();
-        setIsRecruiter(!!roleData);
+        checkRecruiterRole(user.id);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [checkRecruiterRole]);
 
   // Check shortlist status and fetch contact info when profile + recruiter ready
   useEffect(() => {
@@ -252,7 +255,12 @@ const PublicProfile = () => {
   };
 
   useEffect(() => {
-    if (slug) loadPublicProfile(slug);
+    if (slug) {
+      loadPublicProfile(slug);
+    } else {
+      setNotFound(true);
+      setLoading(false);
+    }
   }, [slug]);
 
   const loadLikes = useCallback(async (profileId: string) => {
