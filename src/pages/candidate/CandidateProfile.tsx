@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { candidateNavItems as navItems } from "@/lib/navItems";
+import ProfileQRCode from "@/components/ProfileQRCode";
 import {
   Dialog,
   DialogContent,
