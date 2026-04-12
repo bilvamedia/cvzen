@@ -162,6 +162,10 @@ const Applications = () => {
                                   <FileText className="h-3 w-3" /> View CV
                                 </Button>
                               </Link>
+                            ) : app.candidate_name && app.candidate_name !== "Unknown" ? (
+                              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" disabled>
+                                <FileText className="h-3 w-3" /> No Profile Link
+                              </Button>
                             ) : (
                               <Button variant="ghost" size="sm" className="h-7 text-xs" disabled>
                                 No CV
