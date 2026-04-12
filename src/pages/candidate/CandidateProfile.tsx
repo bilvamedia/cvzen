@@ -461,6 +461,7 @@ const CandidateProfile = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <ProfileQRCode profileSlug={profile?.profile_slug} fullName={profile?.full_name} />
             <Button variant="hero" size="sm" onClick={handleShare}>
               <Share2 className="h-4 w-4 mr-1" /> Share
             </Button>
