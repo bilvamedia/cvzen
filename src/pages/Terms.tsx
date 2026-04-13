@@ -40,7 +40,8 @@ const Terms = () => {
             <p className="text-sm">
               By accessing or using cvZen ("Platform"), you agree to be bound by these Terms of Service ("Terms"). If
               you do not agree, you must not use the Platform. These Terms constitute a legally binding agreement
-              between you and cvZen.
+              between you and <strong>BILVA MEDIA TECH SERVICES (OPC) PRIVATE LIMITED</strong> ("Company"), the entity
+              operating cvZen.
             </p>
             <p className="text-sm mt-2">
               These Terms are governed by the <strong>Indian Contract Act, 1872</strong>, the{" "}
@@ -271,8 +272,9 @@ const Terms = () => {
             <h2 className="text-xl font-semibold text-foreground mb-3">13. Contact</h2>
             <div className="bg-muted rounded-lg p-4 text-sm">
               <p>
-                <strong>cvZen Legal</strong>
+                <strong>BILVA MEDIA TECH SERVICES (OPC) PRIVATE LIMITED</strong>
               </p>
+              <p>Operating as: cvZen</p>
               <p>Email: legal@cvzen.ai</p>
               <p>Contact: +91 8790 794 686</p>
               <p>For billing disputes: billing@cvzen.ai</p>
@@ -282,6 +284,9 @@ const Terms = () => {
         </div>
 
         <div className="mt-12 pt-6 border-t border-border flex flex-wrap gap-4 text-xs text-muted-foreground">
+          <span>
+            © {new Date().getFullYear()} BILVA MEDIA TECH SERVICES (OPC) PRIVATE LIMITED. All rights reserved.
+          </span>
           <Link to="/privacy" className="hover:text-foreground transition-colors">
             Privacy Policy
           </Link>
