@@ -267,6 +267,7 @@ const Terms = () => {
                 <strong>cvZen Legal</strong>
               </p>
               <p>Email: legal@cvzen.ai</p>
+              <p>Contact: +91 8790 794 686</p>
               <p>For billing disputes: billing@cvzen.ai</p>
               <p>For Indian consumer grievances: grievance@cvzen.ai</p>
             </div>
