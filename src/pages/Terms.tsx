@@ -147,7 +147,7 @@ const Terms = () => {
                   Pro-rata refund within <strong>30 days</strong> if service quality is materially deficient.
                 </li>
                 <li>
-                  Refunds processed to original payment method within <strong>5-7 business days</strong>.
+                  Refunds processed and credited to original payment method within <strong>5-7 business days</strong>.
                 </li>
                 <li>GST refunds handled as per GST Act provisions.</li>
               </ul>
