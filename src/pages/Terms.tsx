@@ -3,7 +3,7 @@ import { ArrowLeft, FileText } from "lucide-react";
 import logoHeader from "@/assets/logo-header.svg";
 
 const Terms = () => {
-  const lastUpdated = "April 8, 2026";
+  const lastUpdated = "April 13, 2026";
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,6 +25,13 @@ const Terms = () => {
           <h1 className="text-3xl font-bold text-foreground mb-2">Terms of Service</h1>
           <p className="text-sm text-muted-foreground">Last updated: {lastUpdated}</p>
           <p className="text-sm text-muted-foreground mt-1">Governed by the laws of India. Applicable globally.</p>
+          <div className="mt-4 bg-muted rounded-lg px-4 py-3 text-sm text-foreground/80">
+            cvZen is a product of{" "}
+            <strong className="text-foreground">BILVA MEDIA TECH SERVICES (OPC) PRIVATE LIMITED</strong>, a company
+            incorporated under the Companies Act, 2013, with its registered office in India (CIN available upon
+            request). References to "cvZen", "we", "us", or "our" in these Terms refer to BILVA MEDIA TECH SERVICES
+            (OPC) PRIVATE LIMITED.
+          </div>
         </div>
 
         <div className="prose prose-sm max-w-none space-y-8 text-foreground/85">
