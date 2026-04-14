@@ -7,11 +7,14 @@ const corsHeaders = {
 };
 
 /**
- * Generates vector embeddings for resume sections, job descriptions, OR job preferences.
- * 
- * Resume mode:       { sectionIds: string[], column: "content" | "improved_content" }
- * Job mode:          { jobIds: string[] }
- * Preferences mode:  { preferencesUserId: string }
+ * Generates production-grade semantic vector embeddings using Lovable AI.
+ * Uses structured output (tool calling) to extract semantic features,
+ * then maps them into dense 768-dimensional vectors for pgvector similarity search.
+ *
+ * Modes:
+ *   Resume:      { sectionIds: string[], column: "content" | "improved_content" }
+ *   Job:         { jobIds: string[] }
+ *   Preferences: { preferencesUserId: string }
  */
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -77,8 +80,7 @@ serve(async (req) => {
       }
 
       try {
-        const enrichedText = await enrichTextWithAI(text, "job_preferences", LOVABLE_API_KEY);
-        const embedding = generateDeterministicEmbedding(enrichedText, 768);
+        const embedding = await generateSemanticEmbedding(text, "job_preferences", LOVABLE_API_KEY);
         const vectorStr = `[${embedding.join(",")}]`;
 
         const { error: updateError } = await supabase
@@ -125,8 +127,7 @@ serve(async (req) => {
         if (!text) continue;
 
         try {
-          const enrichedText = await enrichTextWithAI(text, "job_description", LOVABLE_API_KEY);
-          const embedding = generateDeterministicEmbedding(enrichedText, 768);
+          const embedding = await generateSemanticEmbedding(text, "job_description", LOVABLE_API_KEY);
           const vectorStr = `[${embedding.join(",")}]`;
 
           const { error: updateError } = await supabase
@@ -185,8 +186,7 @@ serve(async (req) => {
       if (!text) continue;
 
       try {
-        const enrichedText = await enrichTextWithAI(text, section.section_type, LOVABLE_API_KEY);
-        const embedding = generateDeterministicEmbedding(enrichedText, 768);
+        const embedding = await generateSemanticEmbedding(text, section.section_type, LOVABLE_API_KEY);
         const vectorStr = `[${embedding.join(",")}]`;
 
         const { error: updateError } = await supabase
@@ -219,7 +219,8 @@ serve(async (req) => {
   }
 });
 
-/** Convert job preferences to searchable text */
+// ────────────────────── Text extraction helpers ──────────────────────
+
 function preferencesToText(pref: any): string {
   const parts: string[] = [];
   if (pref.seniority_level) parts.push(`Seniority: ${pref.seniority_level}`);
@@ -246,7 +247,6 @@ function preferencesToText(pref: any): string {
   return parts.join(". ");
 }
 
-/** Convert job data to searchable text */
 function jobToText(job: any): string {
   const parts = [job.title, job.company];
   if (job.location) parts.push(job.location);
@@ -258,7 +258,6 @@ function jobToText(job: any): string {
   return parts.join(" ").trim();
 }
 
-/** Convert section JSONB content to searchable text */
 function sectionToText(title: string, data: any): string {
   const items = data?.items || [];
   const parts = [title];
@@ -275,93 +274,184 @@ function sectionToText(title: string, data: any): string {
   return parts.join(" ").trim();
 }
 
-/** Use AI to expand text with semantic keywords for better matching */
-async function enrichTextWithAI(text: string, sectionType: string, apiKey: string): Promise<string> {
-  try {
-    let systemPrompt: string;
-    if (sectionType === "job_description") {
-      systemPrompt = `You are a job description keyword expander. Given a job posting, output the original text PLUS related industry keywords, synonyms, required skill categories, and role variants. Keep output under 500 words. Output plain text only, no formatting.`;
-    } else if (sectionType === "job_preferences") {
-      systemPrompt = `You are a job preferences keyword expander. Given a candidate's job preferences, output the original text PLUS related industry keywords, role synonyms, skill categories, company type keywords, and location variants. This helps match candidates to relevant jobs. Keep output under 500 words. Output plain text only, no formatting.`;
-    } else {
-      systemPrompt = `You are a resume keyword expander. Given a resume section, output the original text PLUS related industry keywords, synonyms, and skill categories. Keep output under 500 words. Output plain text only, no formatting.`;
-    }
+// ────────────────────── Semantic Embedding Engine ──────────────────────
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Section type: ${sectionType}\n\n${text.substring(0, 3000)}` }
-        ],
-        temperature: 0,
-        max_tokens: 600,
-      }),
-    });
+/**
+ * The 96 semantic dimensions we score every text on.
+ * Each dimension is rated 0.0–1.0 by the AI, then expanded
+ * to a 768-dim vector (96 × 8 sub-features via deterministic projection).
+ */
+const SEMANTIC_DIMENSIONS = [
+  // Technical Skills (24)
+  "web_frontend", "web_backend", "mobile_development", "cloud_infrastructure",
+  "devops_cicd", "databases_sql", "databases_nosql", "machine_learning",
+  "data_science", "data_engineering", "cybersecurity", "networking",
+  "embedded_systems", "game_development", "blockchain", "api_design",
+  "testing_qa", "system_design", "low_level_programming", "scripting_automation",
+  "ui_ux_design", "technical_writing", "version_control", "containerization",
+  // Domain/Industry (16)
+  "finance_banking", "healthcare_medical", "ecommerce_retail", "education",
+  "media_entertainment", "manufacturing", "logistics_supply_chain", "real_estate",
+  "legal", "government_public", "telecom", "energy_utilities",
+  "agriculture", "automotive", "travel_hospitality", "nonprofit_social",
+  // Role & Seniority (12)
+  "entry_level", "mid_level", "senior_level", "lead_principal",
+  "management", "executive_cxo", "individual_contributor", "team_collaboration",
+  "mentoring_coaching", "strategic_planning", "hands_on_technical", "cross_functional",
+  // Soft Skills (12)
+  "communication", "leadership", "problem_solving", "creativity",
+  "adaptability", "project_management", "analytical_thinking", "customer_facing",
+  "negotiation", "time_management", "conflict_resolution", "presentation",
+  // Work Preferences (12)
+  "remote_work", "onsite_work", "hybrid_work", "startup_environment",
+  "enterprise_corporate", "freelance_consulting", "full_time", "part_time",
+  "contract_temporary", "international_global", "travel_required", "flexible_schedule",
+  // Compensation & Benefits (8)
+  "high_compensation", "equity_stock", "work_life_balance", "career_growth",
+  "learning_development", "health_benefits", "retirement_benefits", "relocation_support",
+  // Tools & Platforms (12)
+  "aws_cloud", "azure_cloud", "gcp_cloud", "kubernetes_docker",
+  "react_angular_vue", "python_ecosystem", "java_jvm", "dotnet_csharp",
+  "nodejs_typescript", "golang_rust", "salesforce_crm", "sap_erp",
+];
 
-    if (!response.ok) {
-      console.warn("AI enrichment failed, using raw text:", response.status);
-      return text;
-    }
-
-    const data = await response.json();
-    const enriched = data.choices?.[0]?.message?.content?.trim();
-    return enriched || text;
-  } catch (err) {
-    console.warn("AI enrichment error, using raw text:", err);
-    return text;
+/**
+ * Deterministic projection matrix seed — expands 96 AI scores into 768 dims.
+ * Uses seeded pseudo-random to create consistent projections.
+ */
+function getProjectionVector(dimIndex: number, subIndex: number): number[] {
+  const seed = dimIndex * 8 + subIndex;
+  const vec = new Array(8).fill(0);
+  // Lehmer RNG for deterministic projection
+  let state = (seed + 1) * 48271;
+  for (let i = 0; i < 8; i++) {
+    state = (state * 48271) % 2147483647;
+    vec[i] = ((state / 2147483647) * 2 - 1); // range [-1, 1]
   }
+  return vec;
 }
 
 /**
- * Generate a deterministic 768-dim embedding from text using a hash-based approach.
+ * Generate a 768-dim semantic embedding using Lovable AI.
+ * 1. AI scores the text on 96 semantic dimensions (0.0–1.0)
+ * 2. Scores are projected into 768-dim space via deterministic matrix
+ * 3. Vector is L2-normalized for cosine similarity
  */
-function generateDeterministicEmbedding(text: string, dimensions: number): number[] {
-  const normalized = text.toLowerCase().replace(/[^\w\s]/g, " ").replace(/\s+/g, " ").trim();
-  const words = normalized.split(" ");
-  const embedding = new Float64Array(dimensions);
+async function generateSemanticEmbedding(
+  text: string,
+  contextType: string,
+  apiKey: string
+): Promise<number[]> {
+  const scores = await extractSemanticScores(text, contextType, apiKey);
+  return projectTo768(scores);
+}
 
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
-    const posWeight = 1.0 / (1.0 + Math.log(1 + i));
+async function extractSemanticScores(
+  text: string,
+  contextType: string,
+  apiKey: string
+): Promise<number[]> {
+  const contextLabel = contextType === "job_description"
+    ? "job posting"
+    : contextType === "job_preferences"
+    ? "candidate's job preferences"
+    : "resume section";
 
-    const h1 = hashString(word);
-    embedding[Math.abs(h1) % dimensions] += posWeight * (h1 > 0 ? 1 : -1);
+  const systemPrompt = `You are a semantic analysis engine. Given a ${contextLabel}, score it on exactly 96 predefined semantic dimensions. Each score is a float from 0.0 (not relevant at all) to 1.0 (highly relevant). Be precise and nuanced — use the full range. A score of 0.0 means the dimension is completely irrelevant; 0.3-0.5 means somewhat relevant; 0.7-0.9 means strongly relevant; 1.0 means it's a core focus.`;
 
-    if (i < words.length - 1) {
-      const bigram = word + " " + words[i + 1];
-      const h2 = hashString(bigram);
-      embedding[Math.abs(h2) % dimensions] += posWeight * 0.7 * (h2 > 0 ? 1 : -1);
-    }
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash-lite",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: text.substring(0, 4000) },
+      ],
+      temperature: 0,
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "score_semantic_dimensions",
+            description: "Score the text on 96 semantic dimensions. Return exactly 96 float values between 0.0 and 1.0, in the exact order specified.",
+            parameters: {
+              type: "object",
+              properties: Object.fromEntries(
+                SEMANTIC_DIMENSIONS.map((dim) => [
+                  dim,
+                  { type: "number", description: `Relevance score (0.0-1.0) for: ${dim.replace(/_/g, " ")}` },
+                ])
+              ),
+              required: SEMANTIC_DIMENSIONS,
+              additionalProperties: false,
+            },
+          },
+        },
+      ],
+      tool_choice: { type: "function", function: { name: "score_semantic_dimensions" } },
+    }),
+  });
 
-    for (let j = 0; j <= word.length - 3; j++) {
-      const tri = word.substring(j, j + 3);
-      const h3 = hashString(tri);
-      embedding[Math.abs(h3) % dimensions] += posWeight * 0.3 * (h3 > 0 ? 1 : -1);
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error("AI scoring failed:", response.status, errText);
+    throw new Error(`AI scoring failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+  if (!toolCall?.function?.arguments) {
+    console.error("No tool call in response:", JSON.stringify(data).substring(0, 500));
+    throw new Error("AI did not return structured scores");
+  }
+
+  let args: Record<string, number>;
+  try {
+    args = typeof toolCall.function.arguments === "string"
+      ? JSON.parse(toolCall.function.arguments)
+      : toolCall.function.arguments;
+  } catch {
+    throw new Error("Failed to parse AI scores");
+  }
+
+  // Extract scores in order, default to 0.0 if missing
+  return SEMANTIC_DIMENSIONS.map((dim) => {
+    const val = Number(args[dim]);
+    return isNaN(val) ? 0.0 : Math.max(0, Math.min(1, val));
+  });
+}
+
+/**
+ * Project 96 semantic scores into a 768-dimensional embedding.
+ * Each score is expanded to 8 sub-dimensions using a deterministic projection,
+ * then the full vector is L2-normalized.
+ */
+function projectTo768(scores: number[]): number[] {
+  const embedding = new Float64Array(768);
+
+  for (let d = 0; d < 96; d++) {
+    const score = scores[d];
+    if (score === 0) continue;
+
+    const baseIdx = d * 8;
+    const projection = getProjectionVector(d, 0);
+
+    for (let s = 0; s < 8; s++) {
+      embedding[baseIdx + s] = score * projection[s];
     }
   }
 
+  // L2 normalize
   let norm = 0;
-  for (let i = 0; i < dimensions; i++) norm += embedding[i] * embedding[i];
+  for (let i = 0; i < 768; i++) norm += embedding[i] * embedding[i];
   norm = Math.sqrt(norm);
   if (norm > 0) {
-    for (let i = 0; i < dimensions; i++) embedding[i] /= norm;
+    for (let i = 0; i < 768; i++) embedding[i] /= norm;
   }
 
   return Array.from(embedding);
-}
-
-/** Simple string hash function (FNV-1a variant) */
-function hashString(str: string): number {
-  let hash = 2166136261;
-  for (let i = 0; i < str.length; i++) {
-    hash ^= str.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash | 0;
 }
