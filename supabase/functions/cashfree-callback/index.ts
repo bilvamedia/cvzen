@@ -7,7 +7,7 @@ const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const CASHFREE_SANDBOX_URL = "https://sandbox.cashfree.com/pg/orders";
 const CASHFREE_PROD_URL = "https://api.cashfree.com/pg/orders";
 const CASHFREE_API_VERSION = "2023-08-01";
-const USE_SANDBOX = true;
+const USE_SANDBOX = false; // Production mode
 
 async function verifyCashfreeSignature(
   rawBody: string,
