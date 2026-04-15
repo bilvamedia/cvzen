@@ -9,6 +9,11 @@ const PHONEPE_SANDBOX_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/
 const PHONEPE_PROD_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
 const USE_SANDBOX = true; // Toggle for production
 
+// Cashfree API endpoints
+const CASHFREE_SANDBOX_URL = "https://sandbox.cashfree.com/pg/orders";
+const CASHFREE_PROD_URL = "https://api.cashfree.com/pg/orders";
+const CASHFREE_API_VERSION = "2023-08-01";
+
 async function sha256Hex(message: string): Promise<string> {
   const msgBuffer = new TextEncoder().encode(message);
   const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
