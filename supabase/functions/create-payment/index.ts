@@ -9,6 +9,11 @@ const PHONEPE_SANDBOX_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/
 const PHONEPE_PROD_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
 const USE_SANDBOX = true; // Toggle for production
 
+// Cashfree API endpoints
+const CASHFREE_SANDBOX_URL = "https://sandbox.cashfree.com/pg/orders";
+const CASHFREE_PROD_URL = "https://api.cashfree.com/pg/orders";
+const CASHFREE_API_VERSION = "2023-08-01";
+
 async function sha256Hex(message: string): Promise<string> {
   const msgBuffer = new TextEncoder().encode(message);
   const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
@@ -225,6 +230,90 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({
           error: "PhonePe payment initiation failed",
           details: phonepeData.message || phonepeData.code || "Unknown error",
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // ─── Cashfree Payment ───
+    if (gateway === "cashfree") {
+      const appId = Deno.env.get("CASHFREE_APP_ID");
+      const secretKey = Deno.env.get("CASHFREE_SECRET_KEY");
+
+      if (!appId || !secretKey) {
+        return new Response(JSON.stringify({ error: "Cashfree credentials not configured" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const dashRole = plan.target_role === "recruiter" ? "recruiter" : "candidate";
+      const returnUrl = `${req.headers.get("origin") || "https://cvzen.lovable.app"}/${dashRole}/billing?payment_status={order_status}&txn_id=${merchantTransactionId}`;
+      const notifyUrl = `${supabaseUrl}/functions/v1/cashfree-callback`;
+
+      const orderPayload = {
+        order_id: merchantTransactionId,
+        order_amount: amount,
+        order_currency: currency || "INR",
+        customer_details: {
+          customer_id: user.id.replace(/-/g, "").slice(0, 50),
+          customer_email: user.email || "customer@example.com",
+          customer_phone: "9999999999", // Fallback; ideally from profile
+        },
+        order_meta: {
+          return_url: returnUrl,
+          notify_url: notifyUrl,
+        },
+        order_note: `${plan.name} - ${billing_cycle}`,
+      };
+
+      const cashfreeUrl = USE_SANDBOX ? CASHFREE_SANDBOX_URL : CASHFREE_PROD_URL;
+
+      const cfResponse = await fetch(cashfreeUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-client-id": appId,
+          "x-client-secret": secretKey,
+          "x-api-version": CASHFREE_API_VERSION,
+        },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const cfData = await cfResponse.json();
+
+      if (cfData.payment_session_id) {
+        await supabase
+          .from("payment_transactions")
+          .update({
+            gateway_transaction_id: cfData.cf_order_id || merchantTransactionId,
+            status: "processing",
+            metadata: { ...transaction.metadata, cf_order_id: cfData.cf_order_id },
+          })
+          .eq("id", transaction.id);
+
+        return new Response(JSON.stringify({
+          payment_session_id: cfData.payment_session_id,
+          payment_url: cfData.payment_link || null,
+          order_id: merchantTransactionId,
+          cf_order_id: cfData.cf_order_id,
+          transaction_id: transaction.id,
+          gateway: "cashfree",
+          environment: USE_SANDBOX ? "sandbox" : "production",
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } else {
+        await supabase
+          .from("payment_transactions")
+          .update({ status: "failed", metadata: { ...transaction.metadata, cashfree_error: cfData } })
+          .eq("id", transaction.id);
+
+        return new Response(JSON.stringify({
+          error: "Cashfree order creation failed",
+          details: cfData.message || cfData.code || "Unknown error",
         }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
