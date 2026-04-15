@@ -7,7 +7,7 @@ const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 // PhonePe API endpoints
 const PHONEPE_SANDBOX_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay";
 const PHONEPE_PROD_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
-const USE_SANDBOX = true; // Toggle for production
+const USE_SANDBOX = false; // Production mode
 
 // Cashfree API endpoints
 const CASHFREE_SANDBOX_URL = "https://sandbox.cashfree.com/pg/orders";
